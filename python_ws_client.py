@@ -9,12 +9,6 @@ def socket_connected():
 
 @sio.on("message")
 def message_received(message):
-    # print(sid)
     print(message)
 
 sio.connect('http://localhost:9003')
-
-# sio.emit("something", "Hello from python.")
-# sio.send("hello")
-
-# sio.wait()

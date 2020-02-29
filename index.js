@@ -24,6 +24,8 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const rooms = new Set()
 
+const reg = /【(.*)】|【(.*)|(.*)】/;
+
 const openRoom = ({ roomid, mid }) => new Promise(resolve => {
   console.log(`OPEN: ${roomid}`)
   const live = new LiveWS(roomid)
@@ -42,10 +44,11 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
       const mid = info[2][0]
       const uname = info[2][1]
       const timestamp = info[0][4]
-      io_.send({ message, roomid, mid, uname, timestamp})
-      // dispatch.emit('danmaku', { message, roomid, mid, uname, timestamp })
-      // const socket_sender = io("http://localhost:8080");
-      // socket_sender.emit('danmaku', { message, roomid, mid, uname, timestamp });
+      let matchres = message.match(reg);
+      // Only send matches message to python client
+      if (matchres && matchres.length > 0){
+        io_.send({ message, roomid, mid, uname, timestamp})
+      }
       console.log({ message, roomid, mid, uname, timestamp })
     }
   })
