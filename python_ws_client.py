@@ -2,12 +2,10 @@ import socketio
 
 sio = socketio.Client()
 
-
 @sio.on('connect')
 def socket_connected():
-    print("Connected")
+    print("Connected with js server")
     print(sio.eio.sid)
-
 
 @sio.on("message")
 def message_received(message):
