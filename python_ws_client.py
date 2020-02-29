@@ -1,17 +1,19 @@
 import socketio
 from MongoDB import MongoDB
-mongo_db = MongoDB()
-print("dataset established")
-sio = socketio.Client()
+class python_ws_client(object):
+    def __init__(self):
+        self.mongo_db = MongoDB()
+        self.sio = socketio.Client()
+        self.sio.on('connect', self.socket_connected)
+        self.sio.on('message', self.message_received)
+        self.sio.connect('http://localhost:9003')
 
-@sio.on('connect')
-def socket_connected():
-    print("Connected with js server")
-    print(sio.eio.sid)
+    def socket_connected(self):
+        print("Connected with js server")
+        print(self.sio.eio.sid)
 
-@sio.on("message")
-def message_received(message):
-    mongo_db.insert_one(message)
-    print(f"insered: {message}")
+    def message_received(self, message):
+        self.mongo_db.insert_one(message)
+        print(f"insered: {message}")
 
-sio.connect('http://localhost:9003')
+ws_listenser = python_ws_client()
