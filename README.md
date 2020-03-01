@@ -28,7 +28,7 @@ git clone https://github.com/pren1/DD_real_time_radar.git
 ```
 mongod
 ```
-4. 安装相关包
+4. 到项目根目录下，安装相关包
 ```
 npm install
 npm install --save express
