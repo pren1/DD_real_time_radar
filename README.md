@@ -8,7 +8,7 @@ Detect the danmaku data in realtime, then track the target Simultaneous interpre
 3. ✅ 弹幕信息优化：仅需要字数信息 已完成 --- by pren1
 4. ✅ 弹幕数实时排名/最后弹幕发言追踪 已完成 --- by pren1
 5. ✅ 整合/后端命令行版本 建立一个demo 已完成 --- by pren1
-6. ✅ 写文档 施工中 --- by pren1
+6. ✅ 写文档 已完成 --- by pren1
 
 ☁️ Introduction
 目前实现的功能有：实时创建同传排行榜（未考虑过去的数据）
