@@ -1,3 +1,4 @@
+// Used to test regex
 const reg = /(.*)【(.*)】|(.*)【(.*)|(.*)】(.*)/;
 original = "233【】】】1232】"
 original = original.replace(/[【】]/g, "")

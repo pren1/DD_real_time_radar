@@ -2,6 +2,7 @@ import socketio
 from MongoDB import MongoDB
 class python_ws_client(object):
     def __init__(self):
+        'Connect to dataset, connect to js server via ws'
         self.mongo_db = MongoDB()
         self.sio = socketio.Client()
         self.sio.on('connect', self.socket_connected)

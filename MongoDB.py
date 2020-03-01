@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import pymongo
+import pprint
 
 class MongoDB(object):
 	def __init__(self):
@@ -12,12 +13,30 @@ class MongoDB(object):
 		'add one message into the database'
 		self.mycol.insert_one(my_dict)
 
-	def find_one(self):
-		for x in self.mycol.find({'uname': '栀夏暮年'}, {"_id": 0}):
-			print(x)
+	def obtain_rank(self):
+		'sort uname with message length sum'
+		x = self.mycol.aggregate([{"$group": {"_id": '$uname', "count": {"$sum": "$message_length"}}},
+		                          {"$sort":{"count":-1}}])
+		pprint.pprint(list(x))
+		return list(x)
+
+	def obtain_target_uname_data(self, uname):
+		'get all the info of uname, only for debug'
+		return list(self.mycol.find({"uname":uname}, {"_id": 0}).sort("message_length", -1))
+
+	def delete_whole_dataset(self):
+		'remove the whole dataset, use with care'
+		self.mycol.drop()
+
+	def latest_room(self, uname):
+		'where_is_the_latest_room_this_man_occur'
+		return list(self.mycol.find({"uname":uname}, {"_id": 0, "message_length": 0}).sort("timestamp", -1).limit(1))
 
 if __name__ == '__main__':
 	# mydict = {'message': '【诶…装备全让我卸下来了 没问题吗】', 'roomid': 21449083, 'mid': 393489, 'uname': '猫にこ', 'timestamp': 1583017729907}
 	db = MongoDB()
+	# db.delete_whole_dataset()
 	# db.insert_one(mydict)
-	db.find_one()
+	# db.obtain_rank()
+	# pprint.pprint(db.obtain_target_uname_data(uname='空崎そらさき'))
+	print(db.latest_room(uname='空崎そらさき'))
