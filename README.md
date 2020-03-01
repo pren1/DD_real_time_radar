@@ -24,7 +24,6 @@ Detect the danmaku data in realtime, then track the target Simultaneous interpre
 git clone https://github.com/pren1/DD_real_time_radar.git
 ```
 2. 安装mongodb
-mac安装[教程](http://choskim.me/how-to-install-mongodb-on-apples-mac-os-x/)
 3. 开启mongodb
 ```
 mongod
