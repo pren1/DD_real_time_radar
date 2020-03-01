@@ -37,6 +37,6 @@ if __name__ == '__main__':
 	db = MongoDB()
 	# db.delete_whole_dataset()
 	# db.insert_one(mydict)
-	# db.obtain_rank()
+	db.obtain_rank()
 	# pprint.pprint(db.obtain_target_uname_data(uname='空崎そらさき'))
-	print(db.latest_room(uname='空崎そらさき'))
+	# print(db.latest_room(uname='空崎そらさき'))

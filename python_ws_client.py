@@ -17,4 +17,8 @@ class python_ws_client(object):
         self.mongo_db.insert_one(message)
         print(f"insered: {message}")
 
-ws_listenser = python_ws_client()
+    def get_database(self):
+        return self.mongo_db
+
+if __name__ == '__main__':
+    ws_listenser = python_ws_client()

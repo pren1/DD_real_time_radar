@@ -14,7 +14,8 @@ def get_real_time(timestamp):
 
 def clear_room_info_format(room_info):
 	'clean the room_info, return a string'
-	room_id = show_me_your_room_id(room_info[0]['roomid'])
+	# room_id = show_me_your_room_id(room_info[0]['roomid'])
+	room_id = room_info[0]['roomid']
 	user_name = room_info[0]['uname']
 	time_stamp = get_real_time(room_info[0]['timestamp'])
 	build_string = f"{user_name} 于 {time_stamp} 在 {room_id} 同传"

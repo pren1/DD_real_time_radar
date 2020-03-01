@@ -1,12 +1,19 @@
 'follow target user'
-from MongoDB import MongoDB
+from python_ws_client import python_ws_client
 from util import *
 
-db = MongoDB()
-target_name = '空崎そらさき'
-'Find latest room info'
-latest_room_info = db.latest_room(uname='空崎そらさき')
-print(latest_room_info)
-print(clear_room_info_format(latest_room_info))
+class main_monitor(object):
+	def __init__(self):
+		self.ws_listenser = python_ws_client()
+		self.database = self.ws_listenser.get_database()
+
+	def target_latest_room(self, target_name):
+		'Find latest room info'
+		latest_room_info = self.database.latest_room(uname=target_name)
+		# print(latest_room_info)
+		print(clear_room_info_format(latest_room_info))
+
+
+
 
 
