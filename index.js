@@ -40,17 +40,22 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
   live.once('live', () => console.log(`LIVE: ${roomid}`))
   live.on('DANMU_MSG', async ({ info }) => {
     if (!info[0][9]) {
-      const message = info[1]
+      var message = info[1]
       const mid = info[2][0]
       const uname = info[2][1]
       const timestamp = info[0][4]
       let matchres = message.match(reg);
       // Only send matches message to python client
       // if (matchres && matchres.length > 0){
+      //   // remove all 【】from message
+      //   message = message.replace(/[【】]/g, "").length
       //   io_.send({ message, roomid, mid, uname, timestamp})
       // }
-      io_.send({ message, roomid, mid, uname, timestamp})
-      console.log({ message, roomid, mid, uname, timestamp })
+      // remove all 【】from message
+      message = message.replace(/[【】]/g, "")
+      message_length = message.length
+      io_.send({ message_length, roomid, mid, uname, timestamp})
+      console.log({ message, message_length, roomid, mid, uname, timestamp })
     }
   })
 
