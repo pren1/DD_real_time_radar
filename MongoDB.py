@@ -17,8 +17,8 @@ class MongoDB(object):
 		'sort uname with message length sum'
 		x = self.mycol.aggregate([{"$group": {"_id": '$uname', "count": {"$sum": "$message_length"}}},
 		                          {"$sort":{"count":-1}}])
-		pprint.pprint(list(x))
-		return list(x)
+		# pprint.pprint(list(x))
+		return [x_ for x_ in x]
 
 	def obtain_target_uname_data(self, uname):
 		'get all the info of uname, only for debug'
@@ -37,6 +37,6 @@ if __name__ == '__main__':
 	db = MongoDB()
 	# db.delete_whole_dataset()
 	# db.insert_one(mydict)
-	db.obtain_rank()
+	# db.obtain_rank()
 	# pprint.pprint(db.obtain_target_uname_data(uname='空崎そらさき'))
 	# print(db.latest_room(uname='空崎そらさき'))
