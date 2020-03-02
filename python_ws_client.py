@@ -26,5 +26,10 @@ class python_ws_client(object):
             'Draw leader board'
             self.leader_board.process_leader_board(k_largest=10)
 
+    def send_message(self):
+        self.sio.emit("something", "Hello from python.")
+        self.sio.send("hello")
+
 if __name__ == '__main__':
     ws_listenser = python_ws_client()
+    ws_listenser.send_message()

@@ -15,6 +15,15 @@ var io_= IO_Server(server, {pingTimeout: 60000});
 io_.on("connection", function(socket) {
   console.log("socket.io connected " + socket.id)
   // io_.send("Hello from node.js")
+  socket.on("something", function(data) {
+    console.log("Received something")
+    console.log(data)
+  })
+
+  socket.on("message", function(data) {
+    console.log("Received message")
+    console.log(data)
+  })
 })
 
 const { LiveWS } = require('bilibili-live-ws')
@@ -46,15 +55,12 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
       const timestamp = info[0][4]
       let matchres = message.match(reg);
       // Only send matches message to python client
-      // if (matchres && matchres.length > 0){
-      //   // remove all 【】from message
-      //   message = message.replace(/[【】]/g, "").length
-      //   io_.send({ message, roomid, mid, uname, timestamp})
-      // }
-      // remove all 【】from message
-      message = message.replace(/[【】]/g, "")
-      message_length = message.length
-      io_.send({ message_length, roomid, mid, uname, timestamp})
+      if (matchres && matchres.length > 0){
+        // remove all 【】from message
+        message = message.replace(/[【】]/g, "")
+        message_length = message.length
+        io_.send({ message_length, roomid, mid, uname, timestamp})
+      }
       console.log({ message, message_length, roomid, mid, uname, timestamp })
     }
   })

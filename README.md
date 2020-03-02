@@ -9,6 +9,7 @@ Detect the danmaku data in realtime, then track the target Simultaneous interpre
 4. ✅ 弹幕数实时排名/最后弹幕发言追踪 已完成 --- by pren1
 5. ✅ 整合/后端命令行版本 建立一个demo 已完成 --- by pren1
 6. ✅ 写文档 已完成 --- by pren1
+7. ✅ 前端准备中 py通过ws向js传消息/加入EON以实时显示数据 施工中 --- by pren1
 
 ☁️ Introduction
 目前实现的功能有：实时创建同传排行榜（未考虑过去的数据）
@@ -41,6 +42,5 @@ node index.js
 ```
 python3 python_ws_client.py
 ```
-
 
 
