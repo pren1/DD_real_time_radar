@@ -19,12 +19,12 @@ class python_ws_client(object):
 
     def message_received(self, message):
         'on received danmakus'
-        self.mongo_db.insert_one(message)
-        # print(f"insered: {message}")
-        self.leader_board_index += 1
-        if self.leader_board_index % 10 == 0 and self.leader_board_index >= 10:
-            'Draw leader board'
-            self.leader_board.process_leader_board(k_largest=10)
+        print(f"Received message: {message}")
+        self.mongo_db.update_everything_according_to_a_new_message(message)
+        # self.leader_board_index += 1
+        # if self.leader_board_index % 10 == 0 and self.leader_board_index >= 10:
+        #     'Draw leader board'
+        #     self.leader_board.process_leader_board(k_largest=10)
 
     def send_message(self):
         self.sio.emit("something", "Hello from python.")

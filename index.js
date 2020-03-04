@@ -61,7 +61,7 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
         message_length = message.length
         io_.send({ message_length, roomid, mid, uname, timestamp})
       }
-      console.log({ message, message_length, roomid, mid, uname, timestamp })
+      console.log({ message, roomid, mid, uname, timestamp})
     }
   })
 
