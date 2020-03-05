@@ -10,7 +10,9 @@ Detect the danmaku data in realtime, then track the target Simultaneous interpre
 5. ✅ 整合/后端命令行版本 建立一个demo 已完成 --- by pren1
 6. ✅ 写文档 已完成 --- by pren1
 7. ✅ 前端准备中 py通过ws向js传消息/加入EON以实时显示数据 施工中 --- by pren1
-8. ✅ 将整体数据库添加到mongodb，添加索引，转化格式 已完成 --- by scPointer
+8. ✅ 将2020/2/20前的弹幕数据库添加到MongoDB 已完成 --- by scPointer
+    1. ✅添加索引，修改attributes格式
+    2. ✅增加辅助表：同传信息/直播间信息/排名
 9. 开启后端数据传输接口：
     1. ✅ 更新各个表格
     2. ✅ 获取实时top rank （最多100条/s）
