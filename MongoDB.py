@@ -17,6 +17,27 @@ class MongoDB(object):
 		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
 
+	def build_room_chart(self, mydict):
+		res = list(self.until_200220.aggregate([
+			{'$match': {"roomid": mydict['roomid']}},
+			{"$project": {
+				"_id": {
+					"$toDate": {
+						"$toLong": "$timestamp"
+					}
+				},
+				"mid": "$mid"
+			}},
+			{"$group": {
+				"_id": {"mid": "$mid", "date_val": {"$dateToString": {"format": "%Y-%m-%d", "date": "$_id"}}},
+				"count": {"$sum": 1},
+			}},
+			{'$match': {'count': {'$gt': 10}}},
+			{"$sort": {"_id.date_val": -1}}
+		]))
+		pprint.pprint(res)
+		# pdb.set_trace()
+
 	def build_man_chart(self, mydict):
 		res = list(self.until_200220.aggregate([
 			{'$match': {"mid": mydict['mid']}},
@@ -25,15 +46,17 @@ class MongoDB(object):
 					"$toDate": {
 						"$toLong": "$timestamp"
 					}
-				}
+				},
+				"roomid": "$roomid"
 			}},
 			{"$group": {
-				"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$_id"}},
-				"count": {"$sum": 1}
+				"_id": {"roomid": "$roomid", "date_val": {"$dateToString": {"format": "%Y-%m-%d", "date": "$_id"}}},
+				"count": {"$sum": 1},
 			}},
-			{"$sort": {"danmaku_room_persentage": -1}}
+			{"$sort": {"_id.date_val": -1}}
 		]))
-		pdb.set_trace()
+		pprint.pprint(res)
+		# pdb.set_trace()
 
 
 	def build_message_room_persentage(self, mydict):
@@ -58,7 +81,7 @@ class MongoDB(object):
 				}},
 				{"$sort": {"danmaku_room_persentage": -1}}
 			]))
-		print(room_persentage)
+		pprint.pprint(room_persentage)
 		return room_persentage
 		# pdb.set_trace()
 
@@ -151,7 +174,7 @@ class MongoDB(object):
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
-  'roomid': 530171,
+  'roomid': 4664126,
   'mid': 13967,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301481099
@@ -159,8 +182,8 @@ if __name__ == '__main__':
 	db = MongoDB()
 	import time
 	start_time = time.time()
+	db.build_room_chart(mydict)
 	db.build_man_chart(mydict)
-	pdb.set_trace()
 	db.build_message_room_persentage(mydict)
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
