@@ -17,6 +17,25 @@ class MongoDB(object):
 		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
 
+	def build_man_chart(self, mydict):
+		res = list(self.until_200220.aggregate([
+			{'$match': {"mid": mydict['mid']}},
+			{"$project": {
+				"_id": {
+					"$toDate": {
+						"$toLong": "$timestamp"
+					}
+				}
+			}},
+			{"$group": {
+				"_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$_id"}},
+				"count": {"$sum": 1}
+			}},
+			{"$sort": {"danmaku_room_persentage": -1}}
+		]))
+		pdb.set_trace()
+
+
 	def build_message_room_persentage(self, mydict):
 		# total_length = self.until_200220.find({"mid": mydict['mid']}).count()
 		room_persentage = list(
@@ -140,6 +159,8 @@ if __name__ == '__main__':
 	db = MongoDB()
 	import time
 	start_time = time.time()
+	db.build_man_chart(mydict)
+	pdb.set_trace()
 	db.build_message_room_persentage(mydict)
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
