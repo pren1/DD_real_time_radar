@@ -18,42 +18,30 @@ class MongoDB(object):
 		self.sorted_list = [] # Initialize the ranked top list
 
 	def build_message_room_persentage(self, mydict):
-		total_length = self.until_200220.find({"mid": mydict['mid']}).count()
-		test_case = self.until_200220.aggregate([{'$match': {"mid": mydict['mid']}},
-		                                         {'$group':
-			                                          {'_id': "",
-			                                           "total": {'$sum':1},
-														"room set": {'$push': '$roomid'}
-			                                          }
-		                                         },
-		                                         {'$unwind': "$room set"},
-		                                         {'$group':
-			                                        {'_id': {"roomid": "$room set", "total": "$total"},
-			                                                        'room_danmaku_count': {'$sum': 1}
-													}
-												 },
-		                                         {"$addFields": {
-			                                         "weight": {"$divide": ["$room_danmaku_count", '$_id.total']},
-		                                         }},
-		                                         {"$sort": {"weight": -1}}
-		                                         ])
-		res = list(test_case)
-
-		test_case2 = list(self.until_200220.aggregate([{'$match': {"mid": mydict['mid']}},
-		                                         {'$group':
-			                                        {'_id': "$roomid",
-			                                         'room_danmaku_count': {'$sum': 1}
-													}
-												 },
-		                                         {"$addFields": {
-			                                         "weight": {"$divide": ["$room_danmaku_count", total_length]},
-		                                         }},
-		                                         {"$sort": {"weight": -1}}
-		                                         ]))
-		pdb.set_trace()
-
-
-
+		# total_length = self.until_200220.find({"mid": mydict['mid']}).count()
+		room_persentage = list(
+			self.until_200220.aggregate([
+				{'$match': {"mid": mydict['mid']}},
+				{'$group':
+					 {'_id': "",
+					  "total": {'$sum':1},
+					  "room set": {'$push': '$roomid'}
+					  }
+				 },
+				{'$unwind': "$room set"},
+				{'$group':
+					 {'_id': {"roomid": "$room set", "total": "$total"},
+					  'room_danmaku_count': {'$sum': 1}
+					  }
+				 },
+				{"$addFields": {
+					"danmaku_room_persentage": {"$divide": ["$room_danmaku_count", '$_id.total']},
+				}},
+				{"$sort": {"danmaku_room_persentage": -1}}
+			]))
+		print(room_persentage)
+		return room_persentage
+		# pdb.set_trace()
 
 	def update_everything_according_to_a_new_message(self, mydict):
 		'Update the following four charts here'
