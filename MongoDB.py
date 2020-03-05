@@ -17,6 +17,44 @@ class MongoDB(object):
 		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
 
+	def build_message_room_persentage(self, mydict):
+		total_length = self.until_200220.find({"mid": mydict['mid']}).count()
+		test_case = self.until_200220.aggregate([{'$match': {"mid": mydict['mid']}},
+		                                         {'$group':
+			                                          {'_id': "",
+			                                           "total": {'$sum':1},
+														"room set": {'$push': '$roomid'}
+			                                          }
+		                                         },
+		                                         {'$unwind': "$room set"},
+		                                         {'$group':
+			                                        {'_id': {"roomid": "$room set", "total": "$total"},
+			                                                        'room_danmaku_count': {'$sum': 1}
+													}
+												 },
+		                                         {"$addFields": {
+			                                         "weight": {"$divide": ["$room_danmaku_count", '$_id.total']},
+		                                         }},
+		                                         {"$sort": {"weight": -1}}
+		                                         ])
+		res = list(test_case)
+
+		test_case2 = list(self.until_200220.aggregate([{'$match': {"mid": mydict['mid']}},
+		                                         {'$group':
+			                                        {'_id': "$roomid",
+			                                         'room_danmaku_count': {'$sum': 1}
+													}
+												 },
+		                                         {"$addFields": {
+			                                         "weight": {"$divide": ["$room_danmaku_count", total_length]},
+		                                         }},
+		                                         {"$sort": {"weight": -1}}
+		                                         ]))
+		pdb.set_trace()
+
+
+
+
 	def update_everything_according_to_a_new_message(self, mydict):
 		'Update the following four charts here'
 		self.update_until_200220(mydict)
@@ -32,6 +70,8 @@ class MongoDB(object):
 		                              'timestamp': mydict['timestamp']
 		                              }
 		self.until_200220.insert_one(insert_target)
+		res = list(self.until_200220.find({'mid':mydict['mid']}))
+		# pdb.set_trace()
 
 	def update_mid_to_nickname(self, mydict):
 		'update mid if the upcoming nickname does not exist in the current mid_chart'
@@ -105,14 +145,16 @@ if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
   'roomid': 530171,
-  'mid': 12283728,
+  'mid': 13967,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301481099
 	}
 	db = MongoDB()
 	import time
 	start_time = time.time()
-	db.update_everything_according_to_a_new_message(mydict)
+	db.build_message_room_persentage(mydict)
+	# db.update_everything_according_to_a_new_message(mydict)
+	# db.update_until_200220(mydict)
 	print("--- %s seconds ---" % (time.time() - start_time))
 	# db.update_top300(mydict)
 	# db.update_mid_to_nickname(mydict)
