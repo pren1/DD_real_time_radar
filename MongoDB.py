@@ -3,6 +3,7 @@ import pymongo
 import pprint
 import pdb
 from util import *
+import datetime
 
 class MongoDB(object):
 	def __init__(self):
@@ -16,6 +17,35 @@ class MongoDB(object):
 		self.until_200220 = self.mydb["until_200220"]
 		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
+
+	def find_rank_within_past_period(self, mydict):
+		test = mydict['timestamp'] - 86400000*90
+		t1 = get_real_time(test)
+		res = list(self.until_200220.aggregate([
+			{'$match': {'timestamp': {'$gt': test}}},
+			{'$group':
+				{
+					'_id': "$mid",
+					'danmaku_count': {'$sum': 1},
+					'danmaku_len_count': {'$sum': "$message_length"},
+					'avg_danmaku_len': {'$avg': "$message_length"}
+				}
+			},
+			{'$sort':
+				{
+					"danmaku_count": -1,
+					'_id': 1
+				}
+			},
+			{'$limit': 300}
+		]))
+		pdb.set_trace()
+
+
+
+
+
+
 
 	def build_room_chart(self, mydict):
 		res = list(self.until_200220.aggregate([
@@ -57,7 +87,6 @@ class MongoDB(object):
 		]))
 		pprint.pprint(res)
 		# pdb.set_trace()
-
 
 	def build_message_room_persentage(self, mydict):
 		# total_length = self.until_200220.find({"mid": mydict['mid']}).count()
@@ -182,6 +211,7 @@ if __name__ == '__main__':
 	db = MongoDB()
 	import time
 	start_time = time.time()
+	db.find_rank_within_past_period(mydict)
 	db.build_room_chart(mydict)
 	db.build_man_chart(mydict)
 	db.build_message_room_persentage(mydict)
