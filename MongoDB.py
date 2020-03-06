@@ -39,13 +39,7 @@ class MongoDB(object):
 			},
 			{'$limit': 300}
 		]))
-		pdb.set_trace()
-
-
-
-
-
-
+		# pdb.set_trace()
 
 	def build_room_chart(self, mydict):
 		res = list(self.until_200220.aggregate([
@@ -212,9 +206,9 @@ if __name__ == '__main__':
 	import time
 	start_time = time.time()
 	db.find_rank_within_past_period(mydict)
-	db.build_room_chart(mydict)
-	db.build_man_chart(mydict)
-	db.build_message_room_persentage(mydict)
+	# db.build_room_chart(mydict)
+	# db.build_man_chart(mydict)
+	# db.build_message_room_persentage(mydict)
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
 	print("--- %s seconds ---" % (time.time() - start_time))
