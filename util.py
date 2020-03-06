@@ -2,10 +2,22 @@ import requests
 from datetime import datetime
 
 def show_me_your_room_id(room_id):
+	return ''
 	'Get room id name'
 	url = 'https://api.live.bilibili.com/live_user/v1/UserInfo/get_anchor_in_room?roomid=' + str(room_id)
 	res = requests.get(url)
 	return res.json()['data']['info']['uname']
+
+def get_nickname_of_mid(mid):
+	'Get nickname from mid'
+	url = 'https://api.bilibili.com/x/space/acc/info?mid='+str(mid)
+	res = requests.get(url)
+	name = res.json()['data']['name']
+	while len(name) == 0:
+		time.sleep(0.1)
+		res = requests.get(url)
+		name = res.json()['data']['name']
+	return name
 
 def get_real_time(timestamp):
 	'change timestamp to real time'
