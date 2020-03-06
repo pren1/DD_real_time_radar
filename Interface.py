@@ -3,17 +3,22 @@ from flask import jsonify
 from flask import request
 from flask_cors import *
 import pdb
-
+from MongoDB import MongoDB
+db = MongoDB()
 'interface to front end'
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 @app.route('/processjson', methods=['POST'])
 def processjson():
 	print(request.args)
-	uid = request.args.get('uid')
+	uid = int(request.args.get('uid'))
 	chart_type = request.args.get('chart_type')
 	print(uid)
 	print(chart_type)
+
+	if chart_type == 'pie':
+		return jsonify({'code': 1, 'message': 'pie data','data': db.build_message_room_persentage(uid)})
+
 	return jsonify({'code': -1, 'message': "room id not exist",
 	                'result': []})
 

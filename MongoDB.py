@@ -4,7 +4,7 @@ import pprint
 import pdb
 from util import *
 import datetime
-
+import random
 class MongoDB(object):
 	def __init__(self):
 		'To use this service, you need to install MongoDB first'
@@ -62,9 +62,9 @@ class MongoDB(object):
 		pprint.pprint(res)
 		# pdb.set_trace()
 
-	def build_man_chart(self, mydict):
+	def build_man_chart(self, mid):
 		res = list(self.until_200220.aggregate([
-			{'$match': {"mid": mydict['mid']}},
+			{'$match': {"mid": mid}},
 			{"$project": {
 				"_id": {
 					"$toDate": {
@@ -82,11 +82,10 @@ class MongoDB(object):
 		pprint.pprint(res)
 		# pdb.set_trace()
 
-	def build_message_room_persentage(self, mydict):
-		# total_length = self.until_200220.find({"mid": mydict['mid']}).count()
+	def build_message_room_persentage(self, mid):
 		room_persentage = list(
 			self.until_200220.aggregate([
-				{'$match': {"mid": mydict['mid']}},
+				{'$match': {"mid": mid}},
 				{'$group':
 					 {'_id': "",
 					  "total": {'$sum':1},
@@ -102,10 +101,16 @@ class MongoDB(object):
 				{"$addFields": {
 					"danmaku_room_persentage": {"$divide": ["$room_danmaku_count", '$_id.total']},
 				}},
-				{"$sort": {"danmaku_room_persentage": -1}}
+				{"$sort": {"danmaku_room_persentage": -1}},
+				{"$project": { "_id.total": 0, "room_danmaku_count": 0}}
 			]))
-		pprint.pprint(room_persentage)
-		return room_persentage
+		front_end_res = []
+		for single in room_persentage:
+			value = single['danmaku_room_persentage'] + random.uniform(0, 1)
+			name = list(self.roomid_to_nickname.find({'roomid':single['_id']['roomid']}))[0]['room_nick_name']
+			front_end_res.append({'value': value, 'name': name})
+		pprint.pprint(front_end_res)
+		return front_end_res
 		# pdb.set_trace()
 
 	def update_everything_according_to_a_new_message(self, mydict):
@@ -205,10 +210,11 @@ if __name__ == '__main__':
 	db = MongoDB()
 	import time
 	start_time = time.time()
-	db.find_rank_within_past_period(mydict)
+	# db.find_rank_within_past_period(mydict)
 	# db.build_room_chart(mydict)
-	# db.build_man_chart(mydict)
-	# db.build_message_room_persentage(mydict)
+	# db.build_man_chart(13967)
+	db.build_message_room_persentage(13967)
+	pdb.set_trace()
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
 	print("--- %s seconds ---" % (time.time() - start_time))
