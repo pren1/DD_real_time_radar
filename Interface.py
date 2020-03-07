@@ -16,8 +16,14 @@ def processjson():
 	print(uid)
 	print(chart_type)
 
+	if chart_type == 'ladder':
+		return jsonify({'code': 0, 'message': 'return initialize rank_list', 'data': db.find_total_rank()})
+
 	if chart_type == 'pie':
 		return jsonify({'code': 1, 'message': 'pie data','data': db.build_message_room_persentage(uid)})
+
+	if chart_type == 'bar':
+		return jsonify({'code': 2, 'message': 'bar whole data', 'data': db.build_man_chart(uid)})
 
 	return jsonify({'code': -1, 'message': "room id not exist",
 	                'result': []})

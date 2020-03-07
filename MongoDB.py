@@ -5,6 +5,7 @@ import pdb
 from util import *
 import datetime
 import random
+from front_end_data_format import *
 class MongoDB(object):
 	def __init__(self):
 		'To use this service, you need to install MongoDB first'
@@ -17,6 +18,21 @@ class MongoDB(object):
 		self.until_200220 = self.mydb["until_200220"]
 		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
+
+	def find_total_rank(self):
+		input_data = list(self.rank_top300.find().sort("danmaku_count", -1))
+		pprint.pprint(input_data)
+		res = []
+		for data in input_data:
+			find_target_name = list(self.mid_to_nickname.find({'mid':data['_id']}))
+			if len(find_target_name) > 0:
+				res.append({
+					'name': find_target_name[0]['man_nick_name'],
+					'value': data['danmaku_count'],
+					'uid': data['_id']
+				})
+		pprint.pprint(res)
+		return res
 
 	def find_rank_within_past_period(self, mydict):
 		test = mydict['timestamp'] - 86400000*90
@@ -79,8 +95,27 @@ class MongoDB(object):
 			}},
 			{"$sort": {"_id.date_val": -1}}
 		]))
-		pprint.pprint(res)
-		# pdb.set_trace()
+		# pprint.pprint(res)
+		'First, we put data into different year-month~'
+		year_month_slot = build_year_month_slot_dict(res)
+		'Then, for each year month slot, we handle the data'
+		final_res = {}
+		for single_slot in year_month_slot:
+			'Build a list for each slot'
+			current_level_room_info, date_x_axis = extract_suitable_timeline(year_month_slot[single_slot])
+			final_res[single_slot] = {'data': [], 'x_axis': date_x_axis}
+			# pprint.pprint(current_level_res)
+			# pprint.pprint(date_x_axis)
+			'Then, we could iterate the date & roomid here'
+			for single_room_slot in current_level_room_info:
+				month_level_feed_in_res = \
+					build_front_end_data_format(
+					name=list(self.roomid_to_nickname.find({'roomid':single_room_slot}))[0]['room_nick_name'],
+					data=month_level_format_change(current_level_room_info[single_room_slot], date_x_axis)
+				)
+				final_res[single_slot]['data'].append(month_level_feed_in_res)
+		pprint.pprint(final_res)
+		return final_res
 
 	def build_message_room_persentage(self, mid):
 		room_persentage = list(
@@ -210,9 +245,12 @@ if __name__ == '__main__':
 	db = MongoDB()
 	import time
 	start_time = time.time()
+	db.find_total_rank()
+	pdb.set_trace()
 	# db.find_rank_within_past_period(mydict)
 	# db.build_room_chart(mydict)
-	# db.build_man_chart(13967)
+	db.build_man_chart(13967)
+	pdb.set_trace()
 	db.build_message_room_persentage(13967)
 	pdb.set_trace()
 	# db.update_everything_according_to_a_new_message(mydict)
