@@ -33,7 +33,8 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const rooms = new Set()
 
-const reg = /【(.*)】|【(.*)|(.*)】/;
+//const reg = /【(.*)】|【(.*)|(.*)】/;
+const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
 const openRoom = ({ roomid, mid }) => new Promise(resolve => {
   console.log(`OPEN: ${roomid}`)
@@ -57,9 +58,9 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
       // Only send matches message to python client
       if (matchres && matchres.length > 0){
         // remove all 【】from message
-        message = message.replace(/[【】]/g, "")
-        message_length = message.length
-        io_.send({ message_length, roomid, mid, uname, timestamp})
+        // message = message.replace(/[【】(（"“‘)）"”’]/g, "")
+        message_length = message.replace(/[【】(（"“‘)）"”’]/g, "").length
+        io_.send({ message, message_length, roomid, mid, uname, timestamp})
       }
       console.log({ message, roomid, mid, uname, timestamp})
     }
