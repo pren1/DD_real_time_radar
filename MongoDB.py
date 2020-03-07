@@ -21,16 +21,27 @@ class MongoDB(object):
 		self.maindb = self.mydb[MAINDB]
 		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
+		self.update_the_original_rank_list()
+
+	def update_the_original_rank_list(self):
+		'get the list from dataset for one time. Later, we will update it when necessary...'
+		rank_list_curosr = self.mid_info.find({'$where':"this.man_nick_name.length>1"}).sort("danmaku_count", -1)
+		for single_rank in rank_list_curosr:
+			self.ranking.find_one_and_update({"_id": single_rank['_id']},
+			                               {'$set': single_rank},
+			                               upsert=True)
+			# pdb.set_trace()
+			# self.ranking.update({'_id': single_rank['_id']}, {'$set': single_rank})
+		print("Ranking list Updated")
 
 	def find_total_rank(self):
-		input_data = list(self.ranking.find().sort("danmaku_count", -1))
-		pprint.pprint(input_data)
+		pprint.pprint(self.ranking)
 		res = []
-		for data in input_data:
-			find_target_name = list(self.mid_info.find({'mid':data['_id']}))
+		for data in self.ranking.find():
+			find_target_name = data['man_nick_name']
 			if len(find_target_name) > 0:
 				res.append({
-					'name': find_target_name[0]['man_nick_name'],
+					'name': find_target_name,
 					'value': data['danmaku_count'],
 					'uid': data['_id']
 				})
@@ -325,12 +336,10 @@ if __name__ == '__main__':
 	# 	exec(f.read())
 	# pdb.set_trace()
 
-
-
-
 	import time
 	start_time = time.time()
 	db.find_total_rank()
+	print("--- %s seconds ---" % (time.time() - start_time))
 	pdb.set_trace()
 	# db.find_rank_within_past_period(mydict)
 	# db.build_room_chart(mydict)
@@ -340,7 +349,7 @@ if __name__ == '__main__':
 	pdb.set_trace()
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
-	print("--- %s seconds ---" % (time.time() - start_time))
+
 	# db.update_top300(mydict)
 	# db.update_mid_to_nickname(mydict)
 	# db.update_roomid_to_nickname(mydict)
