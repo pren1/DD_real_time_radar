@@ -40,7 +40,7 @@ class MongoDB(object):
 	def find_rank_within_past_period(self, mydict):
 		test = mydict['timestamp'] - 86400000*90
 		t1 = get_real_time(test)
-		res = list(self.until_200220.aggregate([
+		res = list(self.maindb.aggregate([
 			{'$match': {'timestamp': {'$gt': test}}},
 			{'$group':
 				{
@@ -61,7 +61,7 @@ class MongoDB(object):
 		# pdb.set_trace()
 
 	def build_room_chart(self, mydict):
-		res = list(self.until_200220.aggregate([
+		res = list(self.maindb.aggregate([
 			{'$match': {"roomid": mydict['roomid']}},
 			{"$project": {
 				"_id": {
@@ -82,7 +82,7 @@ class MongoDB(object):
 		# pdb.set_trace()
 
 	def build_man_chart(self, mid):
-		res = list(self.until_200220.aggregate([
+		res = list(self.maindb.aggregate([
 			{'$match': {"mid": mid}},
 			{"$project": {
 				"_id": {
@@ -113,7 +113,7 @@ class MongoDB(object):
 			for single_room_slot in current_level_room_info:
 				month_level_feed_in_res = \
 					build_front_end_data_format(
-					name=list(self.roomid_to_nickname.find({'roomid':single_room_slot}))[0]['room_nick_name'],
+					name=list(self.roomid_info.find({'roomid':single_room_slot}))[0]['room_nick_name'],
 					data=month_level_format_change(current_level_room_info[single_room_slot], date_x_axis)
 				)
 				final_res[single_slot]['data'].append(month_level_feed_in_res)
@@ -122,7 +122,7 @@ class MongoDB(object):
 
 	def build_message_room_persentage(self, mid):
 		room_persentage = list(
-			self.until_200220.aggregate([
+			self.maindb.aggregate([
 				{'$match': {"mid": mid}},
 				{'$group':
 					 {'_id': "",
@@ -145,7 +145,7 @@ class MongoDB(object):
 		front_end_res = []
 		for single in room_persentage:
 			value = single['danmaku_room_persentage'] + random.uniform(0, 1)
-			name = list(self.roomid_to_nickname.find({'roomid':single['_id']['roomid']}))[0]['room_nick_name']
+			name = list(self.roomid_info.find({'roomid':single['_id']['roomid']}))[0]['room_nick_name']
 			front_end_res.append({'value': value, 'name': name})
 		pprint.pprint(front_end_res)
 		return front_end_res
@@ -310,26 +310,6 @@ class MongoDB(object):
 		'Sort the whole ranking list'
 		self.sorted_list = list(self.ranking.find().sort("danmaku_count", -1))[:self.top_number]
 		assert len(self.sorted_list) == self.top_number, "top list length error"
-"""
-	def obtain_rank(self):
-	'sort uname with message length sum'
-	x = self.mycol.aggregate([{"$group": {"_id": '$uname', "count": {"$sum": "$message_length"}}},
-	                          {"$sort":{"count":-1}}])
-	# pprint.pprint(list(x))
-	return [x_ for x_ in x]
-	
-	def obtain_target_uname_data(self, uname):
-	'get all the info of uname, only for debug'
-	return list(self.mycol.find({"uname":uname}, {"_id": 0}).sort("message_length", -1))
-	
-	def delete_whole_dataset(self):
-	'remove the whole dataset, use with care'
-	self.mycol.drop()
-	
-	def latest_room(self, uname):
-	'where_is_the_latest_room_this_man_occur'
-	return list(self.mycol.find({"uname":uname}, {"_id": 0, "message_length": 0}).sort("timestamp", -1).limit(1))
-"""
 
 if __name__ == '__main__':
 	mydict = {
@@ -340,6 +320,14 @@ if __name__ == '__main__':
   'timestamp': 1583301481099
 	}
 	db = MongoDB()
+	# Update patch 1
+	# with open("update01.py", "r") as f:
+	# 	exec(f.read())
+	# pdb.set_trace()
+
+
+
+
 	import time
 	start_time = time.time()
 	db.find_total_rank()
