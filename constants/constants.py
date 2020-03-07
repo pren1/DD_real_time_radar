@@ -45,6 +45,9 @@ unique ID & nickname of bilibili user
 {
 	_id:[Int32],
 	man_nick_name:[String]
+	danmaku_count:[Int32]
+	danmaku_len_count:[Int32]
+	danmaku_threshord:[Int32]
 }
 """
 

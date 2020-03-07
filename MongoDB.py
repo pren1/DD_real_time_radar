@@ -3,10 +3,8 @@ import pymongo
 import pprint
 import pdb
 from util import *
-from constants import MONGODB_LOCAL, DATABASE_NAME
-from constants import MID_INFO, ROOMID_INFO, RANKING, MAINDB
-from constants import MID_TABLE_OF, ROOM_TABLE_OF
-from constants import DANMAKU_THRESHORD
+from tqdm import tqdm
+from constants import *
 
 class MongoDB(object):
 	def __init__(self):
@@ -64,11 +62,10 @@ class MongoDB(object):
 									 'danmaku_len_count': 0,
 									 'danmaku_threshord': DANMAKU_THRESHORD #UNFINISHED, we need more info of this man
 									 })										#please get more info from api of bilibili
-		self.mid_info.update({'_id': mid_val}, {'$inc':
+		info = self.mid_info.find_one_and_update({'_id': mid_val}, {'$inc':
 													{'danmaku_count':1,
 													'danmaku_len_count':mydict['message_length']}
-												})
-		info = self.mid_info.find_one({'_id': mid_val})
+												}, new = True)
 		count, threshord = info['danmaku_count'], info['danmaku_threshord']
 		if count == threshord:
 			nickname = get_nickname_of_mid(mid_val)
@@ -106,6 +103,52 @@ class MongoDB(object):
 														'timestamp': mydict['timestamp'],
 														'message': mydict['message']
 														})
+
+	def update_nickname_in_roomid_info(self, roomid = 0):
+		if roomid != 0:
+			self.roomid_info.update({'_id': roomid},
+									{'$set':{'room_nick_name': show_me_your_room_id(roomid)}})
+			return
+		'if roomid == 0, update nickname of every room'
+		info = list(self.roomid_info.find())
+		for room in tqdm(info):
+			nick_name = show_me_your_room_id(room['_id'])
+			self.roomid_info.update({'_id':room['_id']},
+									{'$set':{'room_nick_name':nick_name}})
+	
+	def update_nickname_in_mid_info(self, mid = 0):
+		if mid != 0:
+			self.mid_info.update({'_id': mid},
+									{'$set':{'man_nick_name': get_nickname_of_mid(mid)}})
+			return
+		'if mid == 0, update nickname of every interpretation man'
+		info = list(self.mid_info.find())
+		for man in tqdm(info):
+			if man['danmaku_count'] >= man['danmaku_threshord']:
+				nick_name = get_nickname_of_mid(man['_id'])
+				self.mid_info.update({'_id':man['_id']},
+									{'$set':{'man_nick_name':nick_name}})
+				print(f"update the nickname of {man['_id']} to {nick_name}")
+	
+	def reset_threshord_of(self, midlist, new_threshord):
+		for mid in tqdm(midlist):
+			prev_info = self.mid_info.find_one({'_id':mid})
+			has_table = (prev_info['danmaku_count'] >= prev_info['danmaku_threshord'])
+			print(prev_info['danmaku_count'],prev_info['danmaku_threshord'])
+			try:
+				info = self.mid_info.find_one_and_update({'_id':mid},
+												{'$set':{'danmaku_threshord':new_threshord}},
+												new = True)
+			except:
+				print(f"can't find mid {mid}")
+				continue
+
+			"if danmaku_count hasn't reach danmaku_threshord"
+			print(info['danmaku_count'],info['danmaku_threshord'])
+			if has_table and info['danmaku_count'] < info['danmaku_threshord']:
+				self.mydb[MID_TABLE_OF+str(mid)].drop()
+				print(f"table of mid {mid} dropped")
+
 
 	def update_ranking(self, mydict):
 		'Here is the pipline'
@@ -166,8 +209,11 @@ if __name__ == '__main__':
 	db = MongoDB()
 	import time
 	start_time = time.time()
-	db.update_everything_according_to_a_new_message(mydict)
-	print("--- %s seconds ---" % (time.time() - start_time))
+	#db.update_nickname_in_roomid_info()
+	#db.update_nickname_in_mid_info()
+	#db.reset_threshord_of([10007450],3000)
+	#db.update_everything_according_to_a_new_message(mydict)
+	#print("--- %s seconds ---" % (time.time() - start_time))
 	# db.update_ranking(mydict)
 	# db.update_mid_info(mydict)
 	# db.update_roomid_info(mydict)
