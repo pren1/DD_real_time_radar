@@ -8,6 +8,7 @@ import random
 from front_end_data_format import *
 from tqdm import tqdm
 from constants import *
+import time
 
 class MongoDB(object):
 	def __init__(self):
@@ -19,11 +20,12 @@ class MongoDB(object):
 		self.roomid_info = self.mydb[ROOMID_INFO]
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
-		self.top_number = 300
 		self.sorted_list = [] # Initialize the ranked top list
 		self.update_the_original_rank_list()
 
 	def update_the_original_rank_list(self):
+		'Up to date!'
+		print("Updating original rank list...")
 		'get the list from dataset for one time. Later, we will update it when necessary...'
 		rank_list_curosr = self.mid_info.find({'$where':"this.man_nick_name.length>1"}).sort("danmaku_count", -1)
 		for single_rank in rank_list_curosr:
@@ -35,7 +37,8 @@ class MongoDB(object):
 		print("Ranking list Updated")
 
 	def find_total_rank(self):
-		pprint.pprint(self.ranking)
+		'Up to date!'
+		# pprint.pprint(self.ranking)
 		res = []
 		for data in self.ranking.find():
 			find_target_name = data['man_nick_name']
@@ -45,35 +48,36 @@ class MongoDB(object):
 					'value': data['danmaku_count'],
 					'uid': data['_id']
 				})
-		pprint.pprint(res)
+		# pprint.pprint(res)
 		return res
 
-	def find_rank_within_past_period(self, mydict):
-		test = mydict['timestamp'] - 86400000*90
-		t1 = get_real_time(test)
-		res = list(self.maindb.aggregate([
-			{'$match': {'timestamp': {'$gt': test}}},
-			{'$group':
-				{
-					'_id': "$mid",
-					'danmaku_count': {'$sum': 1},
-					'danmaku_len_count': {'$sum': "$message_length"},
-					'avg_danmaku_len': {'$avg': "$message_length"}
-				}
-			},
-			{'$sort':
-				{
-					"danmaku_count": -1,
-					'_id': 1
-				}
-			},
-			{'$limit': 300}
-		]))
-		# pdb.set_trace()
+	# def find_rank_within_past_period(self, mydict, past_date = 90):
+	# 	test = mydict['timestamp'] - 86400000*past_date
+	# 	t1 = get_real_time(test)
+	# 	res = list(self.maindb.aggregate([
+	# 		{'$match': {'timestamp': {'$gt': test}, 'man_nick_name.1': {'$exists': True}}},
+	# 		{'$group':
+	# 			{
+	# 				'_id': "$mid",
+	# 				'danmaku_count': {'$sum': 1},
+	# 				'danmaku_len_count': {'$sum': "$message_length"},
+	# 				'avg_danmaku_len': {'$avg': "$message_length"}
+	# 			}
+	# 		},
+	# 		{'$sort':
+	# 			{
+	# 				"danmaku_count": -1,
+	# 				'_id': 1
+	# 			}
+	# 		}
+	# 	]))
+	# 	pprint.pprint(res)
+	# 	pdb.set_trace()
 
-	def build_room_chart(self, mydict):
+	def build_room_chart(self, roomid):
+		'Up to date!'
 		res = list(self.maindb.aggregate([
-			{'$match': {"roomid": mydict['roomid']}},
+			{'$match': {"roomid": roomid}},
 			{"$project": {
 				"_id": {
 					"$toDate": {
@@ -86,15 +90,15 @@ class MongoDB(object):
 				"_id": {"mid": "$mid", "date_val": {"$dateToString": {"format": "%Y-%m-%d", "date": "$_id"}}},
 				"count": {"$sum": 1},
 			}},
-			{'$match': {'count': {'$gt': 10}}},
+			{'$match': {'count': {'$gt': ROOM_DANMAKU_THRESHOLD}}},
 			{"$sort": {"_id.date_val": -1}}
 		]))
-		pprint.pprint(res)
+		# pprint.pprint(res)
 		# pdb.set_trace()
 
 	def build_man_chart(self, mid):
-		res = list(self.maindb.aggregate([
-			{'$match': {"mid": mid}},
+		'Up to date!'
+		res = list(self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
 			{"$project": {
 				"_id": {
 					"$toDate": {
@@ -109,7 +113,6 @@ class MongoDB(object):
 			}},
 			{"$sort": {"_id.date_val": -1}}
 		]))
-		# pprint.pprint(res)
 		'First, we put data into different year-month~'
 		year_month_slot = build_year_month_slot_dict(res)
 		'Then, for each year month slot, we handle the data'
@@ -124,17 +127,17 @@ class MongoDB(object):
 			for single_room_slot in current_level_room_info:
 				month_level_feed_in_res = \
 					build_front_end_data_format(
-					name=list(self.roomid_info.find({'roomid':single_room_slot}))[0]['room_nick_name'],
+					name=list(self.roomid_info.find({'_id':single_room_slot}))[0]['room_nick_name'],
 					data=month_level_format_change(current_level_room_info[single_room_slot], date_x_axis)
 				)
 				final_res[single_slot]['data'].append(month_level_feed_in_res)
-		pprint.pprint(final_res)
+		# pprint.pprint(final_res)
 		return final_res
 
 	def build_message_room_persentage(self, mid):
+		'Up to date!'
 		room_persentage = list(
-			self.maindb.aggregate([
-				{'$match': {"mid": mid}},
+			self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
 				{'$group':
 					 {'_id': "",
 					  "total": {'$sum':1},
@@ -155,22 +158,23 @@ class MongoDB(object):
 			]))
 		front_end_res = []
 		for single in room_persentage:
+			'Notice you add random val here'
 			value = single['danmaku_room_persentage'] + random.uniform(0, 1)
-			name = list(self.roomid_info.find({'roomid':single['_id']['roomid']}))[0]['room_nick_name']
+			name = list(self.roomid_info.find({'_id':single['_id']['roomid']}))[0]['room_nick_name']
 			front_end_res.append({'value': value, 'name': name})
-		pprint.pprint(front_end_res)
+		# pprint.pprint(front_end_res)
 		return front_end_res
-		# pdb.set_trace()
 
 	def update_everything_according_to_a_new_message(self, mydict):
 		'Update the following four charts here'
+		'Up to date!'
 		self.update_maindb(mydict)
-		self.update_mid_info_and_table(mydict)
+		self.update_mid_info_and_table_and_ranking(mydict)
 		self.update_roomid_info_and_table(mydict)
-		#self.update_ranking(mydict)
 
 	def update_maindb(self, mydict):
 		'Just insert to the original chart'
+		'Up to date!'
 		insert_target = {'message_length': mydict['message_length'],
 		                              'roomid': mydict['roomid'],
 		                              'mid': mydict['mid'],
@@ -178,9 +182,53 @@ class MongoDB(object):
 									  'message': mydict['message']
 		                              }
 		self.maindb.insert_one(insert_target)
-		res = list(self.maindb.find({'mid': mydict['mid']}))
+		# res = list(self.maindb.find({'mid': mydict['mid']}))[-1]
+		# print(res)
+
+	def update_mid_info_and_table_and_ranking(self, mydict):
+		'Up to date!'
+		'update mid if the upcoming nickname does not exist in the current mid_chart'
+		mid_val = int(mydict['mid'])
+		# print('your mid is ',mid_val)
+		row = self.mid_info.find_one({'_id':mid_val})
+		if row is None:
+			'Cannot find this mid, insert this man into the track chart'
+			'A man who has sent over DANMAKU_THRESHORD interpretation danmakus can have its own table'
+			self.mid_info.insert_one({'_id': mid_val,
+									 'danmaku_count': 0,
+									 'danmaku_len_count': 0,
+									 'danmaku_threshord': DANMAKU_THRESHORD, #UNFINISHED, we need more info of this man, please get more info from api of bilibili
+									 'man_nick_name': ''
+									 })
+		info = self.mid_info.find_one_and_update({'_id': mid_val}, {'$inc':
+													{'danmaku_count':1,
+													'danmaku_len_count':mydict['message_length']}
+												}, new = True)
+		count, threshold = info['danmaku_count'], info['danmaku_threshord']
+		if count == threshold:
+			nickname = get_nickname_of_mid(mid_val)
+			'Assign this man a name'
+			self.mid_info.update({'_id': mid_val},{'$set':{'man_nick_name': nickname}})
+			print(f"get new initerpretation man: {nickname}, YEAH!")
+			self.create_table_for_man(mid_val)
+			'Besides, we also add this man to the ladder~'
+			assert len(list(self.ranking.find({'_id': info['_id']}))) == 0, "Fatal ERROR, this man should not be contained in the ranking list!"
+			'Make sure the ranking list is up to date. That is, it contains all the candidates'
+			self.ranking.insert_one(info)
+		elif count > threshold:
+			self.update_mid_table(mydict)
+			find_res = list(self.ranking.find({'_id': info['_id']}))
+			assert len(find_res) == 1, "Fatal ERROR, this man should be contained in the ranking list!"
+			'Also, we update the data within the ranking charts'
+			myquery = find_res[0]
+			newvalues = {"$set": info}
+			self.ranking.update_one(myquery, newvalues)
+			print(f"Updated ranklist: from {myquery} to {info}")
+		else:
+			print("Threshold not meet, keep doing your work!")
 
 	def create_table_for_man(self, mid_val):
+		'Up to date!'
 		history_danmaku = list(self.maindb.find({'mid': mid_val},
 													{'_id': 0,
 													'message_length': 1,
@@ -192,34 +240,17 @@ class MongoDB(object):
 		new_table.insert_many(history_danmaku)
 		new_table.create_index([('roomid', 1),('timestamp', 1)])
 
-	def update_mid_info_and_table(self, mydict):
-		'update mid if the upcoming nickname does not exist in the current mid_chart'
-		mid_val = int(mydict['mid'])
-		# print('your mid is ',mid_val)
-		row = self.mid_info.find_one({'_id':mid_val})
-		if row is None:
-			'Cannot find this mid, insert this man into the track chart'
-			'A man who has sent over DANMAKU_THRESHORD interpretation danmakus can have its own table'
-			self.mid_info.insert_one({'_id': mid_val,
-									 'man_nick_name': '',
-									 'danmaku_count': 0,
-									 'danmaku_len_count': 0,
-									 'danmaku_threshord': DANMAKU_THRESHORD #UNFINISHED, we need more info of this man
-									 })										#please get more info from api of bilibili
-		info = self.mid_info.find_one_and_update({'_id': mid_val}, {'$inc':
-													{'danmaku_count':1,
-													'danmaku_len_count':mydict['message_length']}
-												}, new = True)
-		count, threshord = info['danmaku_count'], info['danmaku_threshord']
-		if count == threshord:
-			nickname = get_nickname_of_mid(mid_val)
-			self.mid_info.update({'_id': mid_val},{'$set':{'man_nick_name': nickname}})
-			print(f"get new initerpretation man: {nickname}")
-			self.create_table_for_man(mid_val)
-		elif count > threshord:
-			self.update_mid_table(mydict)
+	def update_mid_table(self, mydict):
+		'Up to date!'
+		'Insert to the corresponding table'
+		self.mydb[MID_TABLE_OF+str(mydict['mid'])].insert_one({'message_length': mydict['message_length'],
+														'roomid': mydict['roomid'],
+														'timestamp': mydict['timestamp'],
+														'message': mydict['message']
+														})
 
 	def update_roomid_info_and_table(self, mydict):
+		'Up to date!'
 		'I think this func will not be used before simon updates his roomid list'
 		room_id = mydict['roomid']
 		row = self.roomid_info.find_one({'_id':room_id})
@@ -235,92 +266,62 @@ class MongoDB(object):
 		else:
 			self.update_room_table(mydict)
 
-	def update_mid_table(self, mydict):
-		self.mydb[MID_TABLE_OF+str(mydict['mid'])].insert_one({'message_length': mydict['message_length'],
-														'roomid': mydict['roomid'],
-														'timestamp': mydict['timestamp'],
-														'message': mydict['message']
-														})
+
 	def update_room_table(self, mydict):
+		'Up to date!'
 		self.mydb[ROOM_TABLE_OF+str(mydict['roomid'])].insert_one({'message_length': mydict['message_length'],
 														'mid': mydict['mid'],
 														'timestamp': mydict['timestamp'],
 														'message': mydict['message']
 														})
 
-	def update_nickname_in_roomid_info(self, roomid = 0):
-		if roomid != 0:
-			self.roomid_info.update({'_id': roomid},
-									{'$set':{'room_nick_name': show_me_your_room_id(roomid)}})
-			return
-		'if roomid == 0, update nickname of every room'
-		info = list(self.roomid_info.find())
-		for room in tqdm(info):
-			nick_name = show_me_your_room_id(room['_id'])
-			self.roomid_info.update({'_id':room['_id']},
-									{'$set':{'room_nick_name':nick_name}})
+	# def update_nickname_in_roomid_info(self, roomid = 0):
+	# 	'Never used'
+	# 	if roomid != 0:
+	# 		self.roomid_info.update({'_id': roomid},
+	# 								{'$set':{'room_nick_name': show_me_your_room_id(roomid)}})
+	# 		return
+	# 	'if roomid == 0, update nickname of every room'
+	# 	info = list(self.roomid_info.find())
+	# 	for room in tqdm(info):
+	# 		nick_name = show_me_your_room_id(room['_id'])
+	# 		self.roomid_info.update({'_id':room['_id']},
+	# 								{'$set':{'room_nick_name':nick_name}})
 
-	def update_nickname_in_mid_info(self, mid = 0):
-		if mid != 0:
-			self.mid_info.update({'_id': mid},
-									{'$set':{'man_nick_name': get_nickname_of_mid(mid)}})
-			return
-		'if mid == 0, update nickname of every interpretation man'
-		info = list(self.mid_info.find())
-		for man in tqdm(info):
-			if man['danmaku_count'] >= man['danmaku_threshord']:
-				nick_name = get_nickname_of_mid(man['_id'])
-				self.mid_info.update({'_id':man['_id']},
-									{'$set':{'man_nick_name':nick_name}})
-				print(f"update the nickname of {man['_id']} to {nick_name}")
+	# def update_nickname_in_mid_info(self, mid = 0):
+	# 	'Never used'
+	# 	if mid != 0:
+	# 		self.mid_info.update({'_id': mid},
+	# 								{'$set':{'man_nick_name': get_nickname_of_mid(mid)}})
+	# 		return
+	# 	'if mid == 0, update nickname of every interpretation man'
+	# 	info = list(self.mid_info.find())
+	# 	for man in tqdm(info):
+	# 		if man['danmaku_count'] >= man['danmaku_threshord']:
+	# 			nick_name = get_nickname_of_mid(man['_id'])
+	# 			self.mid_info.update({'_id':man['_id']},
+	# 								{'$set':{'man_nick_name':nick_name}})
+	# 			print(f"update the nickname of {man['_id']} to {nick_name}")
 
-	def reset_threshord_of(self, midlist, new_threshord):
-		for mid in tqdm(midlist):
-			prev_info = self.mid_info.find_one({'_id':mid})
-			has_table = (prev_info['danmaku_count'] >= prev_info['danmaku_threshord'])
-			print(prev_info['danmaku_count'],prev_info['danmaku_threshord'])
-			try:
-				info = self.mid_info.find_one_and_update({'_id':mid},
-												{'$set':{'danmaku_threshord':new_threshord}},
-												new = True)
-			except:
-				print(f"can't find mid {mid}")
-				continue
-
-			"if danmaku_count hasn't reach danmaku_threshord"
-			print(info['danmaku_count'],info['danmaku_threshord'])
-			if has_table and info['danmaku_count'] < info['danmaku_threshord']:
-				self.mydb[MID_TABLE_OF+str(mid)].drop()
-				print(f"table of mid {mid} dropped")
-
-
-	def update_ranking(self, mydict):
-		'Here is the pipline'
-		'1. get the input data'
-		input_message_info = list(self.maindb.aggregate([{'$match': {"mid": mydict['mid']}},
-		                                                       {'$group':
-			                                                       {'_id': "$mid",
-																	'danmaku_count': {'$sum': 1},
-																	'danmaku_len_count': {'$sum': "$message_length"},
-																	'avg_danmaku_len': {'$avg': "$message_length"}
-																	}
-																}]))[0]
-		assert len(input_message_info) > 0, "Fatal error, the target mid does not exist, which should never happen"
-		'2. see if it exists in the ladder'
-		res = list(self.ranking.find({'_id': input_message_info['_id']}))
-		if len(res) > 0:
-			'exist, then we just upgrade the data of the ladder'
-			myquery = res[0]
-			newvalues = {"$set": input_message_info}
-			self.ranking.update_one(myquery, newvalues)
-			print(f"Updated ranklist: from {myquery} to {input_message_info}")
-		else:
-			'Otherwise, insert the new thing'
-			self.ranking.insert_one(input_message_info)
-			print("Not exist in ladder, inserted")
-		'Sort the whole ranking list'
-		self.sorted_list = list(self.ranking.find().sort("danmaku_count", -1))[:self.top_number]
-		assert len(self.sorted_list) == self.top_number, "top list length error"
+	# def reset_threshold_of(self, midlist, new_threshold):
+	# 	'Never used'
+	# 	for mid in tqdm(midlist):
+	# 		prev_info = self.mid_info.find_one({'_id':mid})
+	# 		has_table = (prev_info['danmaku_count'] >= prev_info['danmaku_threshord'])
+	# 		print(prev_info['danmaku_count'],prev_info['danmaku_threshord'])
+	# 		try:
+	# 			info = self.mid_info.find_one_and_update({'_id':mid},
+	# 											{'$set':{'danmaku_threshord':new_threshold}},
+	# 											new = True)
+	# 		except:
+	# 			print(f"can't find mid {mid}")
+	# 			continue
+	#
+	# 		"if danmaku_count hasn't reach danmaku_threshord"
+	# 		print(info['danmaku_count'],info['danmaku_threshord'])
+	# 		if has_table and info['danmaku_count'] < info['danmaku_threshord']:
+	# 			self.mydb[MID_TABLE_OF+str(mid)].drop()
+	# 			print(f"table of mid {mid} dropped")
 
 if __name__ == '__main__':
 	mydict = {
@@ -328,7 +329,8 @@ if __name__ == '__main__':
   'roomid': 4664126,
   'mid': 13967,
   'uname': '蒼月夢aitoyume',
-  'timestamp': 1583301481099
+  'timestamp': 1583301481099,
+   'message': "测试～"
 	}
 	db = MongoDB()
 	# Update patch 1
@@ -336,17 +338,15 @@ if __name__ == '__main__':
 	# 	exec(f.read())
 	# pdb.set_trace()
 
-	import time
 	start_time = time.time()
-	db.find_total_rank()
-	print("--- %s seconds ---" % (time.time() - start_time))
-	pdb.set_trace()
+	# db.find_total_rank()
 	# db.find_rank_within_past_period(mydict)
-	# db.build_room_chart(mydict)
-	db.build_man_chart(13967)
-	pdb.set_trace()
+	# db.build_room_chart(mydict['roomid'])
+	# db.build_man_chart(13967)
 	db.build_message_room_persentage(13967)
-	pdb.set_trace()
+	# db.update_everything_according_to_a_new_message(mydict)
+	print("--- %s seconds ---" % (time.time() - start_time))
+	# db.find_rank_within_past_period(mydict)
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
 

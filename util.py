@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+import time
 
 def show_me_your_room_id(room_id):
 	'Get room id name'
@@ -7,7 +8,7 @@ def show_me_your_room_id(room_id):
 	res = requests.get(url)
 	name = res.json()['data']['info']['uname']
 	while len(name) == 0:
-		time.sleep(1)
+		# time.sleep(1)
 		res = requests.get(url)
 		name = res.json()['data']['name']
 	return name
@@ -18,7 +19,7 @@ def get_nickname_of_mid(mid):
 	res = requests.get(url)
 	name = res.json()['data']['name']
 	while len(name) == 0:
-		time.sleep(1)
+		# time.sleep(1)
 		res = requests.get(url)
 		name = res.json()['data']['name']
 	return name

@@ -6,6 +6,8 @@ DATABASE_NAME = "danmaku_db"
 
 DANMAKU_THRESHORD = 150
 
+ROOM_DANMAKU_THRESHOLD = 10
+
 MAINDB = "until_200220"
 """
 information of every interpretation danmaku (without message)
