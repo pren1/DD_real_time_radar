@@ -238,7 +238,8 @@ class MongoDB(object):
 													}))
 		new_table = self.mydb[MID_TABLE_OF+str(mid_val)]
 		new_table.insert_many(history_danmaku)
-		new_table.create_index([('roomid', 1),('timestamp', 1)])
+		new_table.create_index([('roomid', 1)])
+		new_table.create_index([('timestamp',-1)])
 
 	def update_mid_table(self, mydict):
 		'Up to date!'
@@ -261,7 +262,8 @@ class MongoDB(object):
 										})								 #please get more info from api of bilibili
 
 			self.update_room_table(mydict)
-			self.mydb[ROOM_TABLE_OF+str(room_id)].create_index([('mid',1),('timestamp',1)])
+			self.mydb[ROOM_TABLE_OF+str(room_id)].create_index([('mid',1)])
+			self.mydb[ROOM_TABLE_OF+str(room_id)].create_index([('timestamp',-1)])
 			print(f"{room_nick_name} has been inserted to the room name list")
 		else:
 			self.update_room_table(mydict)
