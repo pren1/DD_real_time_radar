@@ -21,21 +21,16 @@ Detect the danmaku data in realtime, then track the target Simultaneous interpre
     1. ✅ 更新各个表格
     2. ✅ 获取实时top rank （最多100条/s）
     3. 为各个同传man设计个人页面显示内容
-        1. 直播间总弹幕占比 （环状图）
-        2. 当前是否正在同传（待讨论）
-        3. 同传弹幕折线图 （时间 & 直播间 & 弹幕数）
-        4. Rank
-        5. 当前弹幕总数，及其他弹幕数据
-        6. 
-    4. 月榜 周榜
-    5. 直播间同传man折线图
+        1. 直播间总弹幕占比 （环状图）✅ 
+        2. 当前是否正在同传（待讨论）❎ （摸了
+        3. 同传弹幕折线图 （时间 & 直播间 & 弹幕数）✅ 
+        4. Rank ❎ （摸了
+        5. 当前弹幕总数，及其他弹幕数据 ❎ （摸了
+    4. 月榜 周榜 ❎ （摸了
+    5. 直播间同传man折线图 ❎ （摸了
                                                                                              
-
-
-
-
 ☁️ Introduction
-目前实现的功能有：实时创建同传排行榜（未考虑过去的数据）
+目前实现的功能有：实时创建同传排行榜（考虑过去的数据）
 
 <p>
     <img src="image/Img.png"/>
@@ -65,5 +60,13 @@ node index.js
 ```
 python3 python_ws_client.py
 ```
+7. 运行前端程序
+[这里](https://github.com/dd-center/DD_real_time_radar_frontend)
+
+8. 运行后端数据库接口
+```
+python3 Interface.py
+```
+
 
 
