@@ -22,7 +22,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		# self.update_the_original_rank_list()
+		self.update_the_original_rank_list()
 
 	def real_time_monitor_info(self, mid):
 		'figure out currently, where is this man working'
@@ -80,7 +80,7 @@ class MongoDB(object):
 					'value': data['danmaku_count'],
 					'uid': data['_id']
 				})
-		# pprint.pprint(res)
+		pprint.pprint(res)
 		return res
 
 	# def find_rank_within_past_period(self, mydict, past_date = 90):
@@ -309,53 +309,53 @@ class MongoDB(object):
 														'message': mydict['message']
 														})
 
-	# def update_nickname_in_roomid_info(self, roomid = 0):
-	# 	'Never used'
-	# 	if roomid != 0:
-	# 		self.roomid_info.update({'_id': roomid},
-	# 								{'$set':{'room_nick_name': show_me_your_room_id(roomid)}})
-	# 		return
-	# 	'if roomid == 0, update nickname of every room'
-	# 	info = list(self.roomid_info.find())
-	# 	for room in tqdm(info):
-	# 		nick_name = show_me_your_room_id(room['_id'])
-	# 		self.roomid_info.update({'_id':room['_id']},
-	# 								{'$set':{'room_nick_name':nick_name}})
+	def update_nickname_in_roomid_info(self, roomid = 0):
+		'Never used'
+		if roomid != 0:
+			self.roomid_info.update({'_id': roomid},
+									{'$set':{'room_nick_name': show_me_your_room_id(roomid)}})
+			return
+		'if roomid == 0, update nickname of every room'
+		info = list(self.roomid_info.find())
+		for room in tqdm(info):
+			nick_name = show_me_your_room_id(room['_id'])
+			self.roomid_info.update({'_id':room['_id']},
+									{'$set':{'room_nick_name':nick_name}})
 
-	# def update_nickname_in_mid_info(self, mid = 0):
-	# 	'Never used'
-	# 	if mid != 0:
-	# 		self.mid_info.update({'_id': mid},
-	# 								{'$set':{'man_nick_name': get_nickname_of_mid(mid)}})
-	# 		return
-	# 	'if mid == 0, update nickname of every interpretation man'
-	# 	info = list(self.mid_info.find())
-	# 	for man in tqdm(info):
-	# 		if man['danmaku_count'] >= man['danmaku_threshord']:
-	# 			nick_name = get_nickname_of_mid(man['_id'])
-	# 			self.mid_info.update({'_id':man['_id']},
-	# 								{'$set':{'man_nick_name':nick_name}})
-	# 			print(f"update the nickname of {man['_id']} to {nick_name}")
+	def update_nickname_in_mid_info(self, mid = 0):
+		'Never used'
+		if mid != 0:
+			self.mid_info.update({'_id': mid},
+									{'$set':{'man_nick_name': get_nickname_of_mid(mid)}})
+			return
+		'if mid == 0, update nickname of every interpretation man'
+		info = list(self.mid_info.find())
+		for man in tqdm(info):
+			if man['danmaku_count'] >= man['danmaku_threshord']:
+				nick_name = get_nickname_of_mid(man['_id'])
+				self.mid_info.update({'_id':man['_id']},
+									{'$set':{'man_nick_name':nick_name}})
+				print(f"update the nickname of {man['_id']} to {nick_name}")
 
-	# def reset_threshold_of(self, midlist, new_threshold):
-	# 	'Never used'
-	# 	for mid in tqdm(midlist):
-	# 		prev_info = self.mid_info.find_one({'_id':mid})
-	# 		has_table = (prev_info['danmaku_count'] >= prev_info['danmaku_threshord'])
-	# 		print(prev_info['danmaku_count'],prev_info['danmaku_threshord'])
-	# 		try:
-	# 			info = self.mid_info.find_one_and_update({'_id':mid},
-	# 											{'$set':{'danmaku_threshord':new_threshold}},
-	# 											new = True)
-	# 		except:
-	# 			print(f"can't find mid {mid}")
-	# 			continue
-	#
-	# 		"if danmaku_count hasn't reach danmaku_threshord"
-	# 		print(info['danmaku_count'],info['danmaku_threshord'])
-	# 		if has_table and info['danmaku_count'] < info['danmaku_threshord']:
-	# 			self.mydb[MID_TABLE_OF+str(mid)].drop()
-	# 			print(f"table of mid {mid} dropped")
+	def reset_threshord_of(self, midlist, new_threshold):
+		'Never used'
+		for mid in tqdm(midlist):
+			prev_info = self.mid_info.find_one({'_id':mid})
+			has_table = (prev_info['danmaku_count'] >= prev_info['danmaku_threshord'])
+			print(prev_info['danmaku_count'],prev_info['danmaku_threshord'])
+			try:
+				info = self.mid_info.find_one_and_update({'_id':mid},
+												{'$set':{'danmaku_threshord':new_threshold}},
+												new = True)
+			except:
+				print(f"can't find mid {mid}")
+				continue
+
+			"if danmaku_count hasn't reach danmaku_threshord"
+			print(info['danmaku_count'],info['danmaku_threshord'])
+			if has_table and info['danmaku_count'] < info['danmaku_threshord']:
+				self.mydb[MID_TABLE_OF+str(mid)].drop()
+				print(f"table of mid {mid} dropped")
 
 if __name__ == '__main__':
 	mydict = {
@@ -376,7 +376,7 @@ if __name__ == '__main__':
 	print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
 	# print(db.obtain_total_danmaku_count(13967))
-	# db.find_total_rank()
+	db.find_total_rank()
 	# db.find_rank_within_past_period(mydict)
 	# db.build_room_chart(mydict['roomid'])
 	# db.build_man_chart(13967)
