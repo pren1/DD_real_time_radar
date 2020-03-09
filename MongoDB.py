@@ -21,7 +21,21 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		self.update_the_original_rank_list()
+		# self.update_the_original_rank_list()
+
+	def obtain_current_rank(self, mid):
+		rank_list = list(self.ranking.find())
+		rank = 1
+		for single_one in rank_list:
+			if single_one['_id'] == mid:
+				return rank
+			rank += 1
+		'This man does not exist in the rank list!'
+		return -1
+
+	def obtain_total_danmaku_count(self, mid):
+		'How many danmaku intotal did this person sent'
+		return list(self.ranking.find({'_id':mid}))[0]['danmaku_count']
 
 	def update_the_original_rank_list(self):
 		'Up to date!'
@@ -339,11 +353,13 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
+	# print(db.obtain_current_rank(13967))
+	# print(db.obtain_total_danmaku_count(13967))
 	# db.find_total_rank()
 	# db.find_rank_within_past_period(mydict)
 	# db.build_room_chart(mydict['roomid'])
 	# db.build_man_chart(13967)
-	db.build_message_room_persentage(13967)
+	# db.build_message_room_persentage(13967)
 	# db.update_everything_according_to_a_new_message(mydict)
 	print("--- %s seconds ---" % (time.time() - start_time))
 	# db.find_rank_within_past_period(mydict)

@@ -30,6 +30,12 @@ def processjson():
 	if chart_type == 'bar':
 		return jsonify({'code': 2, 'message': 'bar whole data', 'data': db.build_man_chart(uid)})
 
+	if chart_type == 'danmaku_counter':
+		return jsonify({'code': 3, 'message': 'danmaku counts', 'data': db.obtain_total_danmaku_count(uid)})
+
+	if chart_type == 'rank':
+		return jsonify({'code': 4, 'message': 'rank of this man', 'data': db.obtain_current_rank(uid)})
+
 	return jsonify({'code': -1, 'message': "nothing returned",
 	                'result': []})
 
