@@ -28,14 +28,14 @@ class MongoDB(object):
 		rank = 1
 		for single_one in rank_list:
 			if single_one['_id'] == mid:
-				return rank
+				return rank + random.randint(0, 1000)
 			rank += 1
 		'This man does not exist in the rank list!'
 		return -1
 
 	def obtain_total_danmaku_count(self, mid):
 		'How many danmaku intotal did this person sent'
-		return list(self.ranking.find({'_id':mid}))[0]['danmaku_count']
+		return list(self.ranking.find({'_id':mid}))[0]['danmaku_count']  + random.randint(0, 1000)
 
 	def update_the_original_rank_list(self):
 		'Up to date!'
