@@ -38,6 +38,10 @@ def processjson():
 		print('Rank')
 		return jsonify({'code': 4, 'message': 'rank of this man', 'data': db.obtain_current_rank(uid)})
 
+	if chart_type == 'isworking':
+		print("work or not")
+		return jsonify({'code':5, 'message': 'whether this man is working or not', 'data': db.real_time_monitor_info(uid)})
+
 	return jsonify({'code': -1, 'message': "nothing returned",
 	                'result': []})
 

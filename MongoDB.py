@@ -9,6 +9,7 @@ from front_end_data_format import *
 from tqdm import tqdm
 from constants import *
 import time
+from datetime import datetime
 
 class MongoDB(object):
 	def __init__(self):
@@ -22,6 +23,23 @@ class MongoDB(object):
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
 		# self.update_the_original_rank_list()
+
+	def real_time_monitor_info(self, mid):
+		'figure out currently, where is this man working'
+		'Find the chart of this man'
+		res = list(self.mydb[MID_TABLE_OF + str(mid)].find().sort("timestamp",-1).limit(1))
+		current_time = int(time.time()*1000.0)
+		past_danmaku_time = res[0]['timestamp']
+		past_room = list(self.roomid_info.find({'_id':res[0]['roomid']}))[0]['room_nick_name'],
+		# If appear within 5 mins
+		diff_thres = WORKING_THRESHOLD * 60000.0
+		time_diff = abs(current_time - past_danmaku_time)
+		if time_diff < diff_thres:
+			'on live'
+			return f"{past_room}"
+		else:
+			'nope'
+			return f"摸鱼中"
 
 	def obtain_current_rank(self, mid):
 		rank_list = list(self.ranking.find())
@@ -355,6 +373,7 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
+	print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
 	# print(db.obtain_total_danmaku_count(13967))
 	# db.find_total_rank()
