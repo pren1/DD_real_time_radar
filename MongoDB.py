@@ -34,6 +34,7 @@ class MongoDB(object):
 				'message': single['message'],
 				'timestamp': single['timestamp']
 			})
+		pprint.pprint(fin_res)
 		return fin_res
 
 	def real_time_monitor_info(self, mid):
@@ -404,6 +405,14 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
+	db.build_room_chart(mydict['roomid'])
+	pdb.set_trace()
+
+
+
+
+
+
 	# print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
 	# print(db.obtain_total_danmaku_count(13967))

@@ -11,10 +11,14 @@ CORS(app, supports_credentials=True)
 @app.route('/processjson', methods=['POST'])
 def processjson():
 	print(request.args)
-	if request.args.get('uid') == 'undefined':
-		print("Undefined!")
+	if request.args.get('uid') == None or request.args.get('uid') == 'undefined':
+		print("UID undefined!")
 		return jsonify({'code': -2, 'message': "Undefined uid",
-		                'result': []})
+		                'data': []})
+
+	if request.args.get('chart_type') == None or request.args.get('chart_type') == 'undefined':
+		print("chart type undefined!")
+		return jsonify({'code': -3, 'message': "Undefined chart type", 'data': []})
 
 	uid = int(request.args.get('uid'))
 	chart_type = request.args.get('chart_type')
@@ -23,6 +27,7 @@ def processjson():
 	print(chart_type)
 
 	if chart_type == 'ladder':
+		print("ladder")
 		return jsonify({'code': 0, 'message': 'return initialize rank_list', 'data': db.find_total_rank()})
 
 	if chart_type == 'pie':
@@ -43,7 +48,7 @@ def processjson():
 		print("work or not")
 		return jsonify({'code':5, 'message': 'whether this man is working or not', 'data': db.real_time_monitor_info(uid)})
 
-	if request.args.get('roomid') != 'undefined':
+	if request.args.get('roomid') != None and request.args.get('roomid') != 'undefined':
 		roomid = int(request.args.get('roomid'))
 		print(roomid)
 		if chart_type == 'message':
@@ -53,10 +58,11 @@ def processjson():
 		if chart_type == 'room_info':
 			print("Get room information")
 			return jsonify({'code': 7, 'message': "return room message", 'data': db.build_room_chart(roomid=roomid)})
-
 	else:
-		return jsonify({'code': -3, 'message': 'no roomid provided', 'data': []})
+		print("No roomid provided")
+		return jsonify({'code': -4, 'message': 'no roomid provided', 'data': []})
 
+	print("Nothing obtained")
 	return jsonify({'code': -1, 'message': "nothing returned",
 	                'data': []})
 

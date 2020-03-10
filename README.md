@@ -32,10 +32,6 @@ Detect the danmaku data in realtime, then track the target Simultaneous interpre
 ☁️ Introduction
 目前实现的功能有：实时创建同传排行榜（考虑过去的数据）
 
-<p>
-    <img src="image/Img.png"/>
-</p>
-
 ⚡️ Quick start
 
 1. 下载repo
@@ -68,5 +64,307 @@ python3 python_ws_client.py
 python3 Interface.py
 ```
 
+💼 Interface
 
+接收POST，例如：
+```
+`http://localhost:5000/processjson?uid=13967&chart_type=message&roomid=4664126`
+```
 
+1. 获取同传man排行榜信息
+
+uid: 必须 
+
+chart_type: 'ladder'
+
+roomid: 不必要
+
+返回：
+```json5
+{'code': 0,  
+  'message': 
+  'return initialize rank_list', 
+  'data': db.find_total_rank()
+,}
+```
+数据格式例子：
+```json5
+[{'name': '夜行游鬼', 'uid': 13967, 'value': 116935},
+ {'name': '殿子desu', 'uid': 27212086, 'value': 105000},
+ {'name': '快递员小黑', 'uid': 28232182, 'value': 44218},
+ {'name': '精神王Pro液控煤炉专精', 'uid': 42522, 'value': 32799},
+ {'name': 'Searrle', 'uid': 119808, 'value': 32120},
+ {'name': '涼風青葉頑張るぞい', 'uid': 37718180, 'value': 29603},]
+```
+2. 获取同传man个人弹幕直播间分布（饼形图）
+
+uid: 必须 
+
+chart_type: 'pie'
+
+roomid: 不必要
+
+返回：
+```json5
+{
+  'code': 1, 
+  'message': 'pie data',
+  'data': db.build_message_room_persentage(uid)
+,}
+```
+
+数据格式例子：
+
+```json5
+[{'name': '夏色祭Official', 'value': 1.13772090730698},
+ {'name': '花丸晴琉Official', 'value': 0.40185592950192084},
+ {'name': '角卷绵芽Official', 'value': 0.7013105215650967},
+ {'name': 'hololive', 'value': 0.5667098025458158},
+ {'name': '犬山玉姬Official', 'value': 1.0088815410499794},
+ {'name': '天音彼方Official', 'value': 0.15708231751645768},]
+```
+
+3. 获取同传man过往弹幕数据（柱状图）
+
+uid: 必须 
+
+chart_type: 'bar'
+
+roomid: 不必要
+
+返回：
+```json5
+{'code': 2, 
+'message': 'bar whole data', 
+'data': db.build_man_chart(uid)}
+```
+
+数据格式例子：
+
+```json5
+ '2020-02': {'data': [{'data': [1119,
+                                '',
+                                '',
+                                2691,
+                                '',
+                                '',
+                                '',
+                                1234,
+                                1910,
+                                '',
+                                '',
+                                '',
+                                '',
+                                1754,
+                                '',
+                                ''],
+                       'name': '花丸晴琉Official',
+                       'stack': '总量',
+                       'type': 'bar'},
+                      {'data': ['',
+                                966,
+                                879,
+                                685,
+                                653,
+                                829,
+                                '',
+                                '',
+                                '',
+                                1135,
+                                '',
+                                426,
+                                582,
+                                '',
+                                '',
+                                ''],
+                       'name': '夏色祭Official',
+                       'stack': '总量',
+                       'type': 'bar'},
+                      ],
+             'x_axis': ['2020-02-01',
+                        '2020-02-02',
+                        '2020-02-03',
+                        '2020-02-05',
+                        '2020-02-06',
+                        '2020-02-07',
+                        '2020-02-08',
+                        '2020-02-09',
+                        '2020-02-10',
+                        '2020-02-11',
+                        '2020-02-12',
+                        '2020-02-13',
+                        '2020-02-14',
+                        '2020-02-15',
+                        '2020-02-16',
+                        '2020-02-18']}}
+```
+
+4. 获取目标同传man弹幕总数
+
+uid: 必须 
+
+chart_type: 'danmaku_counter'
+
+roomid: 不必要
+
+返回：
+```json5
+{'code': 3, 
+'message': 'danmaku counts', 
+'data': db.obtain_total_danmaku_count(uid)}
+```
+
+数据格式例子：
+```json5
+116945
+```
+
+5. 获取目标同传man当前排名
+
+uid: 必须 
+
+chart_type: 'rank'
+
+roomid: 不必要
+
+返回：
+```json5
+{'code': 4, 
+'message': 'rank of this man', 
+'data': db.obtain_current_rank(uid)}
+```
+
+数据格式例子：
+```json5
+1
+```
+
+5. 查询目标同传man是否在摸鱼。若否，返回目标所在直播间
+
+uid: 必须 
+
+chart_type: 'isworking'
+
+roomid: 不必要
+
+返回：
+```json5
+{'code':5, 
+'message': 'whether this man is working or not', 
+'data': db.real_time_monitor_info(uid)}
+```
+
+数据格式例子：
+```json5
+"摸鱼中"
+```
+
+6. 查询目标同传man在目标直播间发过的所有弹幕，按时间排序
+
+uid: 必须 
+
+chart_type: 'message'
+
+roomid: 必须
+
+返回：
+```json5
+{'code': 6, 
+'message': 'return message of a man in a room', 
+'data': db.get_man_messages(mid=uid, roomid=roomid)}
+```
+
+数据格式例子：
+```json5
+[{'message': '【萝卜：不会让你睡的哦】', 'roomid': 4664126, 'timestamp': 1580389478054},
+ {'message': '【超级会想戴上的啊】', 'roomid': 4664126, 'timestamp': 0},
+ {'message': '【喜欢~喜欢戴着的这个】', 'roomid': 4664126, 'timestamp': 0},
+ {'message': '【没有眼镜活不下去】', 'roomid': 4664126, 'timestamp': 0},
+ {'message': '【多少钱是多少钱？】', 'roomid': 4664126, 'timestamp': 0},]
+```
+
+7.  获取直播间过往弹幕数据（柱状图）
+
+uid: 必须 
+
+chart_type: 'room_info'
+
+roomid: 必须
+
+返回：
+```json5
+{'code': 7, 
+'message': "return room message", 
+'data': db.build_room_chart(roomid=roomid)}
+```
+
+数据格式例子：
+```json5
+'2020-02': {'data': [{'data': ['', '', '', '', '', '', '', '', '', '', '', 57],
+                       'name': 'Agine',
+                       'stack': '总量',
+                       'type': 'bar'},
+                      {'data': ['',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                173],
+                       'name': '汐崎柒',
+                       'stack': '总量',
+                       'type': 'bar'},
+                      {'data': ['', 11, 21, 17, 14, 20, 17, 40, 51, 21, 37, 36],
+                       'name': '烛龙神',
+                       'stack': '总量',
+                       'type': 'bar'},
+                      {'data': [233,
+                                '',
+                                '',
+                                233,
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                '',
+                                ''],
+                       'name': 'Mr_Vergil',
+                       'stack': '总量',
+                       'type': 'bar'}],
+             'x_axis': ['2020-02-01',
+                        '2020-02-02',
+                        '2020-02-04',
+                        '2020-02-07',
+                        '2020-02-08',
+                        '2020-02-09',
+                        '2020-02-10',
+                        '2020-02-13',
+                        '2020-02-14',
+                        '2020-02-15',
+                        '2020-02-16',
+                        '2020-02-20']}}
+```
+8. 错误代码
+    > chart_type 错误 
+    ```json5
+    {'code': -1, 'message': "nothing returned", 'data': []}
+    ```
+    > UID 未提供
+    ```json5
+    {'code': -2, 'message': "Undefined uid", 'data': []}
+    ```
+    > chart_type 未提供
+    ```json5
+    {'code': -3, 'message': "Undefined chart type", 'data': []}
+    ```
+    > roomid 未提供
+    ```json5
+    {'code': -4, 'message': 'no roomid provided', 'data': []}
+    ```
