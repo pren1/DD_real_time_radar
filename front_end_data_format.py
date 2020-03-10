@@ -26,6 +26,23 @@ def extract_suitable_timeline(current_slot):
 	date_x_axis.reverse()
 	return current_level_res, date_x_axis
 
+def extract_suitable_roomid_timeline(current_slot):
+	current_level_res = {}
+	date_x_axis = []
+	for current_single_slot in current_slot:
+		room_id_val = current_single_slot['_id']['mid']
+		time_val = current_single_slot['_id']['date_val']
+		'select independent date as x axis'
+		if time_val not in date_x_axis:
+			date_x_axis.append(time_val)
+		if room_id_val not in current_level_res:
+			current_level_res[room_id_val] = []
+		'Push different messages according to the roomid'
+		current_level_res[room_id_val].append(current_single_slot)
+	'Make sure the date begin with lower part. needs check'
+	date_x_axis.reverse()
+	return current_level_res, date_x_axis
+
 def month_level_format_change(current_room_res, date_x_axis):
 	low_level_dict = {}
 	for single_room in reversed(current_room_res):

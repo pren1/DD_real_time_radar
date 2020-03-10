@@ -22,7 +22,19 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		self.update_the_original_rank_list()
+		# self.update_the_original_rank_list()
+
+	def get_man_messages(self, mid, roomid):
+		'return all the messages of this man'
+		res = list(self.mydb[MID_TABLE_OF + str(mid)].find({'roomid':roomid}).sort("timestamp", -1))
+		fin_res = []
+		for single in res:
+			fin_res.append({
+				'roomid': roomid,
+				'message': single['message'],
+				'timestamp': single['timestamp']
+			})
+		return fin_res
 
 	def real_time_monitor_info(self, mid):
 		'figure out currently, where is this man working'
@@ -108,8 +120,7 @@ class MongoDB(object):
 
 	def build_room_chart(self, roomid):
 		'Up to date!'
-		res = list(self.maindb.aggregate([
-			{'$match': {"roomid": roomid}},
+		res = list(self.mydb[ROOM_TABLE_OF + f"{roomid}"].aggregate([
 			{"$project": {
 				"_id": {
 					"$toDate": {
@@ -125,8 +136,27 @@ class MongoDB(object):
 			{'$match': {'count': {'$gt': ROOM_DANMAKU_THRESHOLD}}},
 			{"$sort": {"_id.date_val": -1}}
 		]))
-		# pprint.pprint(res)
+		'First, we put data into different year-month~'
+		year_month_slot = build_year_month_slot_dict(res)
+		pprint.pprint(year_month_slot)
+		'Then, for each year month slot, we handle the data'
+		final_res = {}
+		for single_slot in year_month_slot:
+			'Build a list for each slot'
+			'Build a list for each slot'
+			current_level_man_info, date_x_axis = extract_suitable_roomid_timeline(year_month_slot[single_slot])
+			final_res[single_slot] = {'data': [], 'x_axis': date_x_axis}
+			'Then, we could iterate the date & roomid here'
+			for single_man_slot in current_level_man_info:
+				month_level_feed_in_res = \
+					build_front_end_data_format(
+						name=list(self.mid_info.find({'_id': single_man_slot}))[0]['man_nick_name'],
+						data=month_level_format_change(current_level_man_info[single_man_slot], date_x_axis)
+					)
+				final_res[single_slot]['data'].append(month_level_feed_in_res)
+		pprint.pprint(final_res)
 		# pdb.set_trace()
+		return final_res
 
 	def build_man_chart(self, mid):
 		'Up to date!'
@@ -163,11 +193,12 @@ class MongoDB(object):
 					data=month_level_format_change(current_level_room_info[single_room_slot], date_x_axis)
 				)
 				final_res[single_slot]['data'].append(month_level_feed_in_res)
-		# pprint.pprint(final_res)
+		pprint.pprint(final_res)
 		return final_res
 
 	def build_message_room_persentage(self, mid):
 		'Up to date!'
+		'return room persentage & room name'
 		room_persentage = list(
 			self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
 				{'$group':
@@ -373,10 +404,12 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
-	print(db.real_time_monitor_info(13967))
+	# print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
 	# print(db.obtain_total_danmaku_count(13967))
-	db.find_total_rank()
+	# db.build_message_room_persentage(13967)
+	# db.get_man_messages(13967, 4664126)
+	# db.find_total_rank()
 	# db.find_rank_within_past_period(mydict)
 	# db.build_room_chart(mydict['roomid'])
 	# db.build_man_chart(13967)

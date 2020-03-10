@@ -18,6 +18,7 @@ def processjson():
 
 	uid = int(request.args.get('uid'))
 	chart_type = request.args.get('chart_type')
+
 	print(uid)
 	print(chart_type)
 
@@ -42,8 +43,22 @@ def processjson():
 		print("work or not")
 		return jsonify({'code':5, 'message': 'whether this man is working or not', 'data': db.real_time_monitor_info(uid)})
 
+	if request.args.get('roomid') != 'undefined':
+		roomid = int(request.args.get('roomid'))
+		print(roomid)
+		if chart_type == 'message':
+			print("ask for message of mid in a room")
+			return jsonify({'code': 6, 'message': 'return message of a man in a room', 'data': db.get_man_messages(mid=uid, roomid=roomid)})
+
+		if chart_type == 'room_info':
+			print("Get room information")
+			return jsonify({'code': 7, 'message': "return room message", 'data': db.build_room_chart(roomid=roomid)})
+
+	else:
+		return jsonify({'code': -3, 'message': 'no roomid provided', 'data': []})
+
 	return jsonify({'code': -1, 'message': "nothing returned",
-	                'result': []})
+	                'data': []})
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0')
