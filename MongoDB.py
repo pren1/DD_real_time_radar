@@ -22,7 +22,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		# self.update_the_original_rank_list()
+		self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -72,7 +72,7 @@ class MongoDB(object):
 		'Up to date!'
 		print("Updating original rank list...")
 		'get the list from dataset for one time. Later, we will update it when necessary...'
-		rank_list_curosr = self.mid_info.find({'$where':"this.man_nick_name.length>1"}).sort("danmaku_count", -1)
+		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_count", -1)
 		for single_rank in rank_list_curosr:
 			self.ranking.find_one_and_update({"_id": single_rank['_id']},
 			                               {'$set': single_rank},
