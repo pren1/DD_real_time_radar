@@ -36,17 +36,23 @@ def processjson():
 	if chart_type == 'bar':
 		return jsonify({'code': 2, 'message': 'bar whole data', 'data': db.build_man_chart(uid)})
 
-	if chart_type == 'danmaku_counter':
-		print('danmaku_counter')
-		return jsonify({'code': 3, 'message': 'danmaku counts', 'data': db.obtain_total_danmaku_count(uid)})
-
-	if chart_type == 'rank':
-		print('Rank')
-		return jsonify({'code': 4, 'message': 'rank of this man', 'data': db.obtain_current_rank(uid)})
-
-	if chart_type == 'isworking':
-		print("work or not")
-		return jsonify({'code':5, 'message': 'whether this man is working or not', 'data': db.real_time_monitor_info(uid)})
+	if chart_type == 'man_status':
+		print("get the status of this person")
+		return jsonify({'code': 3, 'message': '[danmaku counts, rank of this man, whether this man is working or not]',
+		                'data': {'danmaku_counts': db.obtain_total_danmaku_count(uid),
+		                         'current_rank': db.obtain_current_rank(uid),
+		                         'is_working': db.real_time_monitor_info(uid)}})
+	# if chart_type == 'danmaku_counter':
+	# 	print('danmaku_counter')
+	# 	return jsonify({'code': 3, 'message': 'danmaku counts', 'data': db.obtain_total_danmaku_count(uid)})
+	#
+	# if chart_type == 'rank':
+	# 	print('Rank')
+	# 	return jsonify({'code': 4, 'message': 'rank of this man', 'data': db.obtain_current_rank(uid)})
+	#
+	# if chart_type == 'isworking':
+	# 	print("work or not")
+	# 	return jsonify({'code':5, 'message': 'whether this man is working or not', 'data': db.real_time_monitor_info(uid)})
 
 	if request.args.get('roomid') != None and request.args.get('roomid') != 'undefined':
 		roomid = int(request.args.get('roomid'))
