@@ -54,6 +54,12 @@ class MongoDB(object):
 			'nope'
 			return f"摸鱼中"
 
+	def get_face_and_sign(self, mid):
+		'Notice that this mid must be within the rank list!'
+		data = list(self.ranking.find({'_id': mid}))[0]
+		assert len(data) != 0, "Fatal ERROR, this man should be contained in the ranking list!"
+		return data['face'], data['sign']
+
 	def obtain_current_rank(self, mid):
 		rank_list = list(self.ranking.find())
 		rank = 1
@@ -423,10 +429,11 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
+	res = db.get_face_and_sign(13967)
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# db.find_total_rank()
 	# db.build_room_chart(mydict['roomid'])
-	res = db.build_message_room_persentage(13967)
+	# res = db.build_message_room_persentage(13967)
 	pdb.set_trace()
 
 	# print(db.real_time_monitor_info(13967))

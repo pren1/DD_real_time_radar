@@ -237,13 +237,13 @@ python3 Interface.py
     
     返回：
     ```json5
-    {'code': 3, 
-     'message': '[danmaku counts, rank of this man, whether this man is working or not]',
-	 'data':
-   {'danmaku_counts': db.obtain_total_danmaku_count(uid),
-    'current_rank': db.obtain_current_rank(uid),
-    'is_working': db.real_time_monitor_info(uid)}
-   }
+    {'code': 3, 'message': '[danmaku counts, rank of this man, whether this man is working or not, face, sign]',
+		                'data': {'danmaku_counts': db.obtain_total_danmaku_count(uid),
+		                         'current_rank': db.obtain_current_rank(uid),
+		                         'is_working': db.real_time_monitor_info(uid),
+						       'face': face,
+		                         'sign': sign
+		                         }}
     ```
     
     数据格式例子：
@@ -251,7 +251,9 @@ python3 Interface.py
     {
     'danmaku_counts': 116945,
     'current_rank': 1,
-    'is_working': "摸鱼中"
+    'is_working': "摸鱼中",
+    'face': ('http://i2.hdslb.com/bfs/face/b5aad263be5753ff5293f4888fd2ec071f9b1c11.jpg',
+    'sign': '虚拟克苏鲁系键盘主播，在黑夜中游荡的鬼魂，在此祝愿你们快乐'
     } 
     ```
 
