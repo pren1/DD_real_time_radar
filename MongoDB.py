@@ -22,7 +22,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		self.update_the_original_rank_list()
+		# self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -71,26 +71,22 @@ class MongoDB(object):
 	def update_the_original_rank_list(self):
 		'Up to date!'
 		print("Updating original rank list...")
+		self.ranking.drop()
+		print("deleted previous ranking list")
 		'get the list from dataset for one time. Later, we will update it when necessary...'
 		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_count", -1)
-		for single_rank in rank_list_curosr:
-			face = ''
-			sign = ''
-			while len(face) == 0 and len(sign) == 0:
-				print("Asking bilibili...just wait")
-				time.sleep(1)
-				face, sign = get_sign_and_face_of_mid(single_rank['_id'])
-
+		for single_rank in tqdm(rank_list_curosr):
+			face, sign = get_sign_and_face_of_mid(single_rank['_id'])
 			single_rank['face'] = face
 			single_rank['sign'] = sign
-			print(single_rank)
 			self.ranking.find_one_and_update({"_id": single_rank['_id']},
 			                               {'$set': single_rank},
 			                               upsert=True)
 			# pdb.set_trace()
 			# self.ranking.update({'_id': single_rank['_id']}, {'$set': single_rank})
 		print("Ranking list Updated")
-		pdb.set_trace()
+		pprint.pprint(list(self.ranking.find()))
+		# pdb.set_trace()
 
 	def find_total_rank(self):
 		'Up to date!'
@@ -102,7 +98,9 @@ class MongoDB(object):
 				res.append({
 					'name': find_target_name,
 					'value': data['danmaku_count'],
-					'uid': data['_id']
+					'uid': data['_id'],
+					'face': data['face'],
+					'sign': data['sign']
 				})
 		pprint.pprint(res)
 		return res
@@ -286,6 +284,11 @@ class MongoDB(object):
 			self.mid_info.update({'_id': mid_val},{'$set':{'man_nick_name': nickname}})
 			print(f"get new initerpretation man: {nickname}, YEAH!")
 			self.create_table_for_man(mid_val)
+
+			'add face & sign information here'
+			face, sign = get_sign_and_face_of_mid(info['_id'])
+			info['face'] = face
+			info['sign'] = sign
 			'Besides, we also add this man to the ladder~'
 			assert len(list(self.ranking.find({'_id': info['_id']}))) == 0, "Fatal ERROR, this man should not be contained in the ranking list!"
 			'Make sure the ranking list is up to date. That is, it contains all the candidates'
@@ -404,7 +407,7 @@ if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
   'roomid': 4664126,
-  'mid': 13967,
+  'mid': 1395983,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301481099,
    'message': "测试～"
@@ -416,7 +419,9 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
-	db.build_room_chart(mydict['roomid'])
+	# db.update_mid_info_and_table_and_ranking(mydict)
+	db.find_total_rank()
+	# db.build_room_chart(mydict['roomid'])
 	pdb.set_trace()
 
 

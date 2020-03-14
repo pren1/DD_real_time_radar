@@ -30,6 +30,10 @@ def get_sign_and_face_of_mid(mid):
 	res = requests.get(url)
 	face = res.json()['data']['face']
 	sign = res.json()['data']['sign']
+	while len(face) == 0:
+		print("Asking bilibili...just wait")
+		face = res.json()['data']['face']
+		sign = res.json()['data']['sign']
 	return face, sign
 
 def get_real_time(timestamp):
