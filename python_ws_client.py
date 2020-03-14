@@ -1,6 +1,6 @@
 import socketio
 from MongoDB import MongoDB
-from leader_board_drawer import leader_board_drawer
+# from leader_board_drawer import leader_board_drawer
 
 class python_ws_client(object):
     def __init__(self):
@@ -11,7 +11,7 @@ class python_ws_client(object):
         self.sio.on('connect', self.socket_connected)
         self.sio.on('message', self.message_received)
         self.sio.connect('http://localhost:9003')
-        self.leader_board = leader_board_drawer(self.mongo_db)
+        # self.leader_board = leader_board_drawer(self.mongo_db)
 
     def socket_connected(self):
         print("Connected with js server")
@@ -32,4 +32,4 @@ class python_ws_client(object):
 
 if __name__ == '__main__':
     ws_listenser = python_ws_client()
-    ws_listenser.send_message()
+    # ws_listenser.send_message()
