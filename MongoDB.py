@@ -230,13 +230,17 @@ class MongoDB(object):
 				{"$project": { "_id.total": 0, "room_danmaku_count": 0}}
 			]))
 		front_end_res = []
+		room_id_list = []
 		for single in room_persentage:
 			'Notice you add random val here'
 			value = single['danmaku_room_persentage'] + random.uniform(0, 1)
 			name = list(self.roomid_info.find({'_id':single['_id']['roomid']}))[0]['room_nick_name']
 			front_end_res.append({'value': value, 'name': name})
+			roomid = single['_id']['roomid']
+			room_id_list.append({'roomid': roomid, 'name': name})
 		# pprint.pprint(front_end_res)
-		return front_end_res
+		# pprint.pprint(room_id_list)
+		return {'pie_data': front_end_res, 'roomid_list': room_id_list}
 
 	def update_everything_according_to_a_new_message(self, mydict):
 		'Update the following four charts here'
@@ -420,8 +424,9 @@ if __name__ == '__main__':
 
 	start_time = time.time()
 	# db.update_mid_info_and_table_and_ranking(mydict)
-	db.find_total_rank()
+	# db.find_total_rank()
 	# db.build_room_chart(mydict['roomid'])
+	res = db.build_message_room_persentage(13967)
 	pdb.set_trace()
 
 
