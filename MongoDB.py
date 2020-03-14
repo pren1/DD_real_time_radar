@@ -429,11 +429,6 @@ if __name__ == '__main__':
 	res = db.build_message_room_persentage(13967)
 	pdb.set_trace()
 
-
-
-
-
-
 	# print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
 	# print(db.obtain_total_danmaku_count(13967))
