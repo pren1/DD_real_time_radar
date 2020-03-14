@@ -42,6 +42,7 @@ def processjson():
 		                'data': {'danmaku_counts': db.obtain_total_danmaku_count(uid),
 		                         'current_rank': db.obtain_current_rank(uid),
 		                         'is_working': db.real_time_monitor_info(uid)}})
+
 	# if chart_type == 'danmaku_counter':
 	# 	print('danmaku_counter')
 	# 	return jsonify({'code': 3, 'message': 'danmaku counts', 'data': db.obtain_total_danmaku_count(uid)})

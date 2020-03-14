@@ -30,11 +30,6 @@ def get_sign_and_face_of_mid(mid):
 	res = requests.get(url)
 	face = res.json()['data']['face']
 	sign = res.json()['data']['sign']
-	while len(face) == 0:
-		time.sleep(1)
-		print("Asking bilibili...just wait")
-		face = res.json()['data']['face']
-		sign = res.json()['data']['sign']
 	return face, sign
 
 def get_real_time(timestamp):
@@ -52,4 +47,5 @@ def clear_room_info_format(room_info):
 	return build_string
 
 if __name__ == '__main__':
-	face, sign = get_sign_and_face_of_mid(13967)
+	face, sign = get_sign_and_face_of_mid(74928521)
+	pdb.set_trace()

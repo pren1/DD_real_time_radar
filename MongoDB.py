@@ -74,12 +74,23 @@ class MongoDB(object):
 		'get the list from dataset for one time. Later, we will update it when necessary...'
 		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_count", -1)
 		for single_rank in rank_list_curosr:
+			face = ''
+			sign = ''
+			while len(face) == 0 and len(sign) == 0:
+				print("Asking bilibili...just wait")
+				time.sleep(1)
+				face, sign = get_sign_and_face_of_mid(single_rank['_id'])
+
+			single_rank['face'] = face
+			single_rank['sign'] = sign
+			print(single_rank)
 			self.ranking.find_one_and_update({"_id": single_rank['_id']},
 			                               {'$set': single_rank},
 			                               upsert=True)
 			# pdb.set_trace()
 			# self.ranking.update({'_id': single_rank['_id']}, {'$set': single_rank})
 		print("Ranking list Updated")
+		pdb.set_trace()
 
 	def find_total_rank(self):
 		'Up to date!'
