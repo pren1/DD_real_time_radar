@@ -89,15 +89,34 @@ python3 Interface.py
     ```
     数据格式例子：
     ```json5
-    [{'name': '夜行游鬼', 'uid': 13967, 'value': 116935},
-     {'name': '殿子desu', 'uid': 27212086, 'value': 105000},
-     {'name': '快递员小黑', 'uid': 28232182, 'value': 44218},
-     {'name': '精神王Pro液控煤炉专精', 'uid': 42522, 'value': 32799},
-     {'name': 'Searrle', 'uid': 119808, 'value': 32120},
-     {'name': '涼風青葉頑張るぞい', 'uid': 37718180, 'value': 29603},]
+    [{'face': 'http://i2.hdslb.com/bfs/face/b5aad263be5753ff5293f4888fd2ec071f9b1c11.jpg',
+      'name': '夜行游鬼',
+      'sign': '虚拟克苏鲁系键盘主播，在黑夜中游荡的鬼魂，在此祝愿你们快乐',
+      'uid': 13967,
+      'value': 116935},
+     {'face': 'http://i1.hdslb.com/bfs/face/d205c6960ce4702957765378cb530636db0086ae.jpg',
+      'name': '殿子desu',
+      'sign': 'huolonglive所属，沉着稳重的同时，又有着想用喷火解决一切的一面！！ 憧憬神龙而进行烤肉修行的轻飘飘龙骑士殿子',
+      'uid': 27212086,
+      'value': 105000},
+     {'face': 'http://i2.hdslb.com/bfs/face/c4d2962af5b43755bc8fca7993da0646c15d50cf.jpg',
+      'name': '快递员小黑',
+      'sign': 'huolonglive所属，喜欢收集脑袋的虚拟肝增生快D员绿皮黑',
+      'uid': 28232182,
+      'value': 44218},
+     {'face': 'http://i2.hdslb.com/bfs/face/759058c702ec401c96ad8f21e2e9304edd4b6df3.jpg',
+      'name': '精神王Pro液控煤炉专精',
+      'sign': '只有懒鬼可以改变懒鬼',
+      'uid': 42522,
+      'value': 32799},
+     {'face': 'http://i1.hdslb.com/bfs/face/d09a136270ce2109ffece1d57465026d6c61a76f.jpg',
+      'name': 'Searrle',
+      'sign': 'ʅ（◞‿◟）ʃ',
+      'uid': 119808,
+      'value': 32120}]
     ```
 
-2. 获取同传man个人弹幕直播间分布（饼形图）
+2. 获取同传man个人弹幕直播间分布（饼形图）,以及获取同传man去过的直播间
 
     uid: 必须 
     
@@ -117,14 +136,22 @@ python3 Interface.py
     数据格式例子：
     
     ```json5
-    [{'name': '夏色祭Official', 'value': 1.13772090730698},
-     {'name': '花丸晴琉Official', 'value': 0.40185592950192084},
-     {'name': '角卷绵芽Official', 'value': 0.7013105215650967},
-     {'name': 'hololive', 'value': 0.5667098025458158},
-     {'name': '犬山玉姬Official', 'value': 1.0088815410499794},
-     {'name': '天音彼方Official', 'value': 0.15708231751645768},]
+    {'pie_data': 
+         [{'name': '夏色祭Official', 'value': 1.13772090730698},
+         {'name': '花丸晴琉Official', 'value': 0.40185592950192084},
+         {'name': '角卷绵芽Official', 'value': 0.7013105215650967},
+         {'name': 'hololive', 'value': 0.5667098025458158},
+         {'name': '犬山玉姬Official', 'value': 1.0088815410499794},
+         {'name': '天音彼方Official', 'value': 0.15708231751645768},],
+    'roomid_list': 
+        [{'name': '物述有栖Official', 'roomid': 21449083},
+         {'name': '皆守ひいろOfficial', 'roomid': 21425985},
+         {'name': '百鬼绫目Official', 'roomid': 21130785},
+         {'name': '时乃空Official', 'roomid': 8899503},
+         {'name': '大空昴Official', 'roomid': 21129632},
+         {'name': '郡道美玲Official', 'roomid': 21575212}]
+    }
     ```
-
 3. 获取同传man过往弹幕数据（柱状图）
 
     uid: 必须 
@@ -200,7 +227,7 @@ python3 Interface.py
                             '2020-02-18']}}
     ```
 
-4. 获取目标同传man弹幕总数
+4. 获取目标同传man弹幕总数, 目标同传man当前排名, 查询目标同传man是否在摸鱼。若否，返回目标所在直播间
 
     uid: 必须 
     
@@ -211,53 +238,21 @@ python3 Interface.py
     返回：
     ```json5
     {'code': 3, 
-    'message': 'danmaku counts', 
-    'data': db.obtain_total_danmaku_count(uid)}
+     'message': '[danmaku counts, rank of this man, whether this man is working or not]',
+	 'data':
+   {'danmaku_counts': db.obtain_total_danmaku_count(uid),
+    'current_rank': db.obtain_current_rank(uid),
+    'is_working': db.real_time_monitor_info(uid)}
+   }
     ```
     
     数据格式例子：
     ```json5
-    116945
-    ```
-
-5. 获取目标同传man当前排名
-
-    uid: 必须 
-    
-    chart_type: 'rank'
-    
-    roomid: 不必要
-    
-    返回：
-    ```json5
-    {'code': 4, 
-    'message': 'rank of this man', 
-    'data': db.obtain_current_rank(uid)}
-    ```
-    
-    数据格式例子：
-    ```json5
-    1
-    ```
-
-5. 查询目标同传man是否在摸鱼。若否，返回目标所在直播间
-
-    uid: 必须 
-    
-    chart_type: 'isworking'
-    
-    roomid: 不必要
-    
-    返回：
-    ```json5
-    {'code':5, 
-    'message': 'whether this man is working or not', 
-    'data': db.real_time_monitor_info(uid)}
-    ```
-    
-    数据格式例子：
-    ```json5
-    "摸鱼中"
+    {
+    'danmaku_counts': 116945,
+    'current_rank': 1,
+    'is_working': "摸鱼中"
+    } 
     ```
 
 6. 查询目标同传man在目标直播间发过的所有弹幕，按时间排序

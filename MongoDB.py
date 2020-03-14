@@ -102,7 +102,7 @@ class MongoDB(object):
 					'face': data['face'],
 					'sign': data['sign']
 				})
-		pprint.pprint(res)
+		pprint.pprint(res[:5])
 		return res
 
 	# def find_rank_within_past_period(self, mydict, past_date = 90):
@@ -239,7 +239,7 @@ class MongoDB(object):
 			roomid = single['_id']['roomid']
 			room_id_list.append({'roomid': roomid, 'name': name})
 		# pprint.pprint(front_end_res)
-		# pprint.pprint(room_id_list)
+		pprint.pprint(room_id_list)
 		return {'pie_data': front_end_res, 'roomid_list': room_id_list}
 
 	def update_everything_according_to_a_new_message(self, mydict):
