@@ -34,8 +34,9 @@ def get_sign_and_face_of_mid(mid):
 	while len(face) == 0:
 		time.sleep(1)
 		print("Asking bilibili...just wait")
-		face = advance_face_link_director(res.json()['data']['face'])
+		face = res.json()['data']['face']
 		sign = res.json()['data']['sign']
+	face = advance_face_link_director(face)
 	return face, sign
 
 def advance_face_link_director(face):
