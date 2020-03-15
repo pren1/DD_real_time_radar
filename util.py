@@ -34,9 +34,15 @@ def get_sign_and_face_of_mid(mid):
 	while len(face) == 0:
 		time.sleep(1)
 		print("Asking bilibili...just wait")
-		face = res.json()['data']['face']
+		face = advance_face_link_director(res.json()['data']['face'])
 		sign = res.json()['data']['sign']
 	return face, sign
+
+def advance_face_link_director(face):
+	if face[-4:] == '.jpg':
+		return face + "_64x64.jpg"
+	elif face[-4:] == '.gif':
+		return face + "_64x64.gif"
 
 def get_real_time(timestamp):
 	'change timestamp to real time'
