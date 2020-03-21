@@ -24,7 +24,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		# self.update_the_original_rank_list()
+		self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -74,7 +74,7 @@ class MongoDB(object):
 
 	def obtain_total_danmaku_count(self, mid):
 		'How many danmaku intotal did this person sent'
-		return list(self.ranking.find({'_id':mid}))[0]['danmaku_count']  + random.randint(0, 1000)
+		return list(self.ranking.find({'_id':mid}))[0]['danmaku_len_count']  + random.randint(0, 1000)
 
 	def update_the_original_rank_list(self):
 		'Up to date!'
@@ -82,7 +82,7 @@ class MongoDB(object):
 		self.ranking.drop()
 		print("deleted previous ranking list")
 		'get the list from dataset for one time. Later, we will update it when necessary...'
-		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_count", -1)
+		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_len_count", -1)
 		for single_rank in tqdm(rank_list_curosr):
 			face, sign = get_sign_and_face_of_mid(single_rank['_id'])
 			single_rank['face'] = face
@@ -105,7 +105,7 @@ class MongoDB(object):
 			if len(find_target_name) > 0:
 				res.append({
 					'name': find_target_name,
-					'value': data['danmaku_count'],
+					'value': data['danmaku_len_count'],
 					'uid': data['_id'],
 					'face': data['face'],
 					'sign': data['sign']
