@@ -24,7 +24,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		self.update_the_original_rank_list()
+		# self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'

@@ -44,6 +44,8 @@ def advance_face_link_director(face):
 		return face + "_64x64.jpg"
 	elif face[-4:] == '.gif':
 		return face + "_64x64.gif"
+	elif face[-4:] == '.png':
+		return face + "_64x64.png"
 
 def get_real_time(timestamp):
 	'change timestamp to real time'
