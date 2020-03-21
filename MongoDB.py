@@ -471,14 +471,27 @@ class MongoDB(object):
 			)
 		)
 		range = range_value(range)
-		'5. 平均弹幕长度：speed' 'maximum: 15'
+		'5. 平均弹幕长度：speed'
 		danmaku_information = list(self.ranking.find({'_id': mid}))[0]
-		speed = min(
-			(danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])/15,
-			1.0)
-
+		speed = (danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])
+		if speed < 6.8200:
+			denominator = 6.8200
+			base = 0.0
+		elif speed < 7.6600:
+			denominator = 7.6600
+			base = 0.2
+		elif speed < 9.2800:
+			denominator = 9.2800
+			base = 0.4
+		elif speed < 10.6400:
+			denominator = 10.6400
+			base = 0.6
+		else:
+			denominator = 15.0000
+			base = 0.8
+		speed = min(0.2 * speed / denominator + base + 0.2, 1.0)
 		'6. potential'
-		potential = 1 - (power + durability + precision + range + speed)/5.
+		potential = min(1 - (power + durability + precision + range + speed)/5. + 0.6, 1.0)
 		data = [{
                     'value': [power, durability, precision, range, speed, potential]
                 }]
@@ -516,7 +529,7 @@ if __name__ == '__main__':
 	# res = db.build_message_room_persentage(13967)
 	# db.build_man_chart(22038007)
 	# print(db.obtain_total_danmaku_count(13967))
-	print(db.build_radar_chart(13967))
+	print(db.build_radar_chart(2907459))
 
 	# print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
