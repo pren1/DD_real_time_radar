@@ -59,6 +59,33 @@ def clear_room_info_format(room_info):
 	build_string = f"{user_name} 于 {time_stamp} 在 {room_id} 同传"
 	return build_string
 
+def number_to_alphabet(number):
+	'return alphabet'
+	if number < 0.2:
+		return 'E'
+	elif number < 0.4:
+		return 'D'
+	elif number < 0.6:
+		return 'C'
+	elif number < 0.8:
+		return 'B'
+	else:
+		return 'A'
+
+def range_value(range):
+	if range < 5:
+		return 0.1
+	elif range < 10:
+		return 0.3
+	elif range < 20:
+		return 0.5
+	elif range < 30:
+		return 0.7
+	elif range < 40:
+		return 0.9
+	else:
+		return 1.1
+
 if __name__ == '__main__':
 	face, sign = get_sign_and_face_of_mid(74928521)
 	pdb.set_trace()

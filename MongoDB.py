@@ -10,6 +10,8 @@ from tqdm import tqdm
 from constants import *
 import time
 from datetime import datetime
+import numpy as np
+from scipy.stats import entropy
 
 class MongoDB(object):
 	def __init__(self):
@@ -417,14 +419,9 @@ class MongoDB(object):
 		'deal with different properties'
 		'1. 弹幕数： 破坏力'
 		rank_length = len(list(self.ranking.find()))
-		power = rank_length - self.obtain_current_rank(mid)
+		power = (rank_length - self.obtain_current_rank(mid) + 1)/rank_length
 		'2. 最长弹幕连续：持续力'
-		# whole_list = self.mydb[MID_TABLE_OF + str(mid)].find({'$where':"this.timestamp > 0"}).sort("timestamp", 1)
-		# first_danmaku = list(self.mydb[MID_TABLE_OF + str(mid)].find({'$where':"this.timestamp > 0"}).sort("timestamp", 1).limit(1))[0]['timestamp']
-		# last_danmaku = list(self.mydb[MID_TABLE_OF + str(mid)].find({'$where':"this.timestamp > 0"}).sort("timestamp", -1).limit(1))[0]['timestamp']
-		# durability = last_danmaku - first_danmaku
-
-		durability = list(
+		time_list = list(
 			self.mydb[MID_TABLE_OF + str(mid)].aggregate([
 				{'$match': {'timestamp': {'$gt': 0}}},
 				{"$group": {
@@ -437,32 +434,65 @@ class MongoDB(object):
 					{
 						"datediff": {
 							"$subtract": ["$first_date", "$second_date"]
-						}
+						},
+						"first_date": "$first_date",
+						"second_date": "$second_date"
 					}
 				}
 			])
-		)[0]['datediff']
+		)[0]
 
-		'3. 平均弹幕长度： 精密度'
-		danmaku_information = list(self.ranking.find({'_id': mid}))[0]
-		precision = danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count']
+		durability = time_list['datediff']/(int(time.time() * 1000.0) - time_list['second_date'])
 
+		'3. 水群间隔： 精密度'
+		danmaku_period = list(self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
+			{"$project": {
+				"_id": {
+					"$toDate": {
+						"$toLong": "$timestamp"
+					}
+				}
+			}},
+			{"$group": {
+				"_id": {"date_val": {"$dateToString": {"format": "%Y-%m", "date": "$_id"}}},
+				"count": {"$sum": 1},
+			}},
+			{"$sort": {"_id.date_val": -1}}
+		]))
+
+		danmaku_list = np.asarray([x['count'] for x in danmaku_period])
+		danmaku_list = danmaku_list/np.sum(danmaku_list)
+		uniform_list = np.ones(len(danmaku_list))/len(danmaku_list)
+		precision = 1.0 - entropy(danmaku_list, uniform_list)
 		'4. DD等级： 射程'
 		range = len(
 			list(
 				self.mydb[MID_TABLE_OF + f"{mid}"].find().distinct("roomid")
 			)
 		)
+		range = range_value(range)
+		'5. 平均弹幕长度：speed' 'maximum: 15'
+		danmaku_information = list(self.ranking.find({'_id': mid}))[0]
+		speed = min(
+			(danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])/15,
+			1.0)
 
-		'5. speed'
-		speed = 1.0
-
-		'6. potential'
+		'6. potential, 每个同传man的潜力都是1！偷懒了ao'
 		potential = 1.0
 
-		return [{
-                    'value': [power, durability, precision, range]
+		data = [{
+                    'value': [power, durability, precision, range, speed, potential]
                 }]
+
+		indicator = [
+			{'name': f'破坏力{number_to_alphabet(power)}', max: 1.0},
+			{'name': f'持续力{number_to_alphabet(durability)}', max: 1.0},
+			{'name': f'精密动作性{number_to_alphabet(precision)}', max: 1.0},
+			{'name': f'射程距离{number_to_alphabet(range)}', max: 1.0},
+			{'name': f'速度{number_to_alphabet(speed)}', max: 1.0},
+			{'name': f'成长性{number_to_alphabet(potential)}', max: 1.0}
+		]
+		return {'data': data, 'indicator': indicator}
 
 if __name__ == '__main__':
 	mydict = {
@@ -488,7 +518,6 @@ if __name__ == '__main__':
 	# db.build_man_chart(22038007)
 	# print(db.obtain_total_danmaku_count(13967))
 	print(db.build_radar_chart(13967))
-	pdb.set_trace()
 
 	# print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))
@@ -502,6 +531,7 @@ if __name__ == '__main__':
 	# db.build_message_room_persentage(13967)
 	# db.update_everything_according_to_a_new_message(mydict)
 	print("--- %s seconds ---" % (time.time() - start_time))
+	pdb.set_trace()
 	# db.find_rank_within_past_period(mydict)
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
