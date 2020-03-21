@@ -22,7 +22,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		self.update_the_original_rank_list()
+		# self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -65,7 +65,7 @@ class MongoDB(object):
 		rank = 1
 		for single_one in rank_list:
 			if single_one['_id'] == mid:
-				return rank + random.randint(0, 1000)
+				return rank
 			rank += 1
 		'This man does not exist in the rank list!'
 		return -1
@@ -413,6 +413,57 @@ class MongoDB(object):
 				self.mydb[MID_TABLE_OF+str(mid)].drop()
 				print(f"table of mid {mid} dropped")
 
+	def build_radar_chart(self, mid):
+		'deal with different properties'
+		'1. 弹幕数： 破坏力'
+		rank_length = len(list(self.ranking.find()))
+		power = rank_length - self.obtain_current_rank(mid)
+		'2. 最长弹幕连续：持续力'
+		# whole_list = self.mydb[MID_TABLE_OF + str(mid)].find({'$where':"this.timestamp > 0"}).sort("timestamp", 1)
+		# first_danmaku = list(self.mydb[MID_TABLE_OF + str(mid)].find({'$where':"this.timestamp > 0"}).sort("timestamp", 1).limit(1))[0]['timestamp']
+		# last_danmaku = list(self.mydb[MID_TABLE_OF + str(mid)].find({'$where':"this.timestamp > 0"}).sort("timestamp", -1).limit(1))[0]['timestamp']
+		# durability = last_danmaku - first_danmaku
+
+		durability = list(
+			self.mydb[MID_TABLE_OF + str(mid)].aggregate([
+				{'$match': {'timestamp': {'$gt': 0}}},
+				{"$group": {
+					"_id": "",
+					"first_date": {"$first": "$timestamp"},
+					"second_date": {"$last": "$timestamp"}
+					}
+				},
+				{"$project":
+					{
+						"datediff": {
+							"$subtract": ["$first_date", "$second_date"]
+						}
+					}
+				}
+			])
+		)[0]['datediff']
+
+		'3. 平均弹幕长度： 精密度'
+		danmaku_information = list(self.ranking.find({'_id': mid}))[0]
+		precision = danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count']
+
+		'4. DD等级： 射程'
+		range = len(
+			list(
+				self.mydb[MID_TABLE_OF + f"{mid}"].find().distinct("roomid")
+			)
+		)
+
+		'5. speed'
+		speed = 1.0
+
+		'6. potential'
+		potential = 1.0
+
+		return [{
+                    'value': [power, durability, precision, range]
+                }]
+
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
@@ -429,11 +480,14 @@ if __name__ == '__main__':
 	# pdb.set_trace()
 
 	start_time = time.time()
-	res = db.get_face_and_sign(13967)
+	# res = db.get_face_and_sign(13967)
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# db.find_total_rank()
-	# db.build_room_chart(mydict['roomid'])
+	# db.build_room_chart(21560356)
 	# res = db.build_message_room_persentage(13967)
+	# db.build_man_chart(22038007)
+	# print(db.obtain_total_danmaku_count(13967))
+	print(db.build_radar_chart(13967))
 	pdb.set_trace()
 
 	# print(db.real_time_monitor_info(13967))
