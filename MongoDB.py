@@ -354,7 +354,7 @@ class MongoDB(object):
 			self.update_room_table(mydict)
 			self.mydb[ROOM_TABLE_OF+str(room_id)].create_index([('mid',1)])
 			self.mydb[ROOM_TABLE_OF+str(room_id)].create_index([('timestamp',-1)])
-			print(f"{room_nick_name} has been inserted to the room name list")
+			print(f"{room_nick_name} has been inserted to the room name list, room id is: {room_id}")
 		else:
 			self.update_room_table(mydict)
 
@@ -509,7 +509,7 @@ class MongoDB(object):
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
-  'roomid': 4664126,
+  'roomid': 13946381,
   'mid': 1395983,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301481099,
@@ -520,7 +520,7 @@ if __name__ == '__main__':
 	# with open("update01.py", "r") as f:
 	# 	exec(f.read())
 	# pdb.set_trace()
-
+	db.update_roomid_info_and_table(mydict)
 	start_time = time.time()
 	# res = db.get_face_and_sign(13967)
 	# db.update_mid_info_and_table_and_ranking(mydict)
