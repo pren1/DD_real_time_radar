@@ -349,7 +349,44 @@ python3 Interface.py
                             '2020-02-16',
                             '2020-02-20']}}
     ```
-8. 错误代码
+8. 雷达图
+
+    uid: 必须 
+    
+    chart_type: 'radar'
+    
+    roomid: 不必须
+    
+    返回：
+    ```json5
+    {'code': 4, 'message': 'radar map',
+		                'data': db.build_radar_chart(uid)
+		                }
+    ```
+    
+    数据格式例子：
+    ```json5
+    {'data': 
+        [{
+           'value': 
+                 [1.0, 
+                  0.8543151325235512, 
+                  0.6736793096660223, 
+                  0.9, 
+                  0.3916657402577412, 
+                  0.23606796351053716]
+           }], 
+           'indicator': [
+                   {'name': '破坏力A', 'max': 1.0}, 
+                   {'name': '持续力A', 'max': 1.0}, 
+                   {'name': '精密动作性B', 'max': 1.0}, 
+                   {'name': '射程距离A', 'max': 1.0}, 
+                   {'name': '速度A', 'max': 1.0}, 
+                   {'name': '成长性D', 'max': 1.0}
+       ]
+    }
+    ```
+9. 错误代码
     > chart_type 错误 
     ```json5
     {'code': -1, 'message': "nothing returned", 'data': []}

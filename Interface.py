@@ -47,6 +47,13 @@ def processjson():
 		                         'sign': sign
 		                         }})
 
+	if chart_type == 'radar':
+		print("Radar!")
+		return jsonify({'code': 4, 'message': 'radar map',
+		                'data': db.build_radar_chart(uid)
+		                })
+
+
 	# if chart_type == 'danmaku_counter':
 	# 	print('danmaku_counter')
 	# 	return jsonify({'code': 3, 'message': 'danmaku counts', 'data': db.obtain_total_danmaku_count(uid)})

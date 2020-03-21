@@ -477,20 +477,19 @@ class MongoDB(object):
 			(danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])/15,
 			1.0)
 
-		'6. potential, 每个同传man的潜力都是1！偷懒了ao'
-		potential = 1.0
-
+		'6. potential'
+		potential = 1 - (power + durability + precision + range + speed)/5.
 		data = [{
                     'value': [power, durability, precision, range, speed, potential]
                 }]
 
 		indicator = [
-			{'name': f'破坏力{number_to_alphabet(power)}', max: 1.0},
-			{'name': f'持续力{number_to_alphabet(durability)}', max: 1.0},
-			{'name': f'精密动作性{number_to_alphabet(precision)}', max: 1.0},
-			{'name': f'射程距离{number_to_alphabet(range)}', max: 1.0},
-			{'name': f'速度{number_to_alphabet(speed)}', max: 1.0},
-			{'name': f'成长性{number_to_alphabet(potential)}', max: 1.0}
+			{'name': f'破坏力{number_to_alphabet(power)}', 'max': 1.0},
+			{'name': f'持续力{number_to_alphabet(durability)}', 'max': 1.0},
+			{'name': f'精密动作性{number_to_alphabet(precision)}', 'max': 1.0},
+			{'name': f'射程距离{number_to_alphabet(range)}', 'max': 1.0},
+			{'name': f'速度{number_to_alphabet(speed)}', 'max': 1.0},
+			{'name': f'成长性{number_to_alphabet(potential)}', 'max': 1.0}
 		]
 		return {'data': data, 'indicator': indicator}
 
