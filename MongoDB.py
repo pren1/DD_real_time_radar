@@ -75,7 +75,7 @@ class MongoDB(object):
 
 	def obtain_total_danmaku_count(self, mid):
 		'How many danmaku intotal did this person sent'
-		return list(self.ranking.find({'_id':mid}))[0]['danmaku_len_count'] + random.randint(0, 1000)
+		return list(self.ranking.find({'_id':mid}))[0]['danmaku_len_count']
 
 	def update_the_original_rank_list(self):
 		'Up to date!'
@@ -237,17 +237,17 @@ class MongoDB(object):
 					  'room_danmaku_count': {'$sum': 1}
 					  }
 				 },
-				{"$addFields": {
-					"danmaku_room_persentage": {"$divide": ["$room_danmaku_count", '$_id.total']},
-				}},
-				{"$sort": {"danmaku_room_persentage": -1}},
-				{"$project": { "_id.total": 0, "room_danmaku_count": 0}}
+				# {"$addFields": {
+				# 	"danmaku_room_persentage": {"$divide": ["$room_danmaku_count", '$_id.total']},
+				# }},
+				{"$sort": {"room_danmaku_count": -1}},
+				{"$project": { "_id.total": 0}}
 			]))
 		front_end_res = []
 		room_id_list = []
 		for single in room_persentage:
 			'Notice you add random val here'
-			value = single['danmaku_room_persentage'] + random.uniform(0, 1)
+			value = single['room_danmaku_count']
 			name = list(self.roomid_info.find({'_id':single['_id']['roomid']}))[0]['room_nick_name']
 			front_end_res.append({'value': value, 'name': name})
 			roomid = single['_id']['roomid']
@@ -575,7 +575,7 @@ if __name__ == '__main__':
    'message': "测试～"
 	}
 	db = MongoDB()
-
+	db.build_message_room_persentage(13967)
 	# Update patch 1
 	# with open("update01.py", "r") as f:
 	# 	exec(f.read())
