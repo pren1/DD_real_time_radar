@@ -88,10 +88,13 @@ class MongoDB(object):
 			face, sign = get_sign_and_face_of_mid(single_rank['_id'])
 			single_rank['face'] = face
 			single_rank['sign'] = sign
+			'Modify: also, we add the time information'
+			'Get last danmaku time, record it'
+			single_rank['keep_working_time'] = 0
 			self.ranking.find_one_and_update({"_id": single_rank['_id']},
 			                               {'$set': single_rank},
 			                               upsert=True)
-			# pdb.set_trace()
+			# pprint.pprint(list(self.ranking.find()))
 			# self.ranking.update({'_id': single_rank['_id']}, {'$set': single_rank})
 		print("Ranking list Updated")
 		pprint.pprint(list(self.ranking.find()))
@@ -304,6 +307,9 @@ class MongoDB(object):
 			face, sign = get_sign_and_face_of_mid(info['_id'])
 			info['face'] = face
 			info['sign'] = sign
+			'also, we add the time info here...'
+			'We need to fill the following values here...'
+			info['keep_working_time'] = 0
 			'Besides, we also add this man to the ladder~'
 			assert len(list(self.ranking.find({'_id': info['_id']}))) == 0, "Fatal ERROR, this man should not be contained in the ranking list!"
 			'Make sure the ranking list is up to date. That is, it contains all the candidates'
@@ -314,6 +320,16 @@ class MongoDB(object):
 			assert len(find_res) == 1, "Fatal ERROR, this man should be contained in the ranking list!"
 			'Also, we update the data within the ranking charts'
 			myquery = find_res[0]
+
+			'See if this man is working or not...'
+			res = list(self.mydb[MID_TABLE_OF + str(info['_id'])].find().sort("timestamp", -1).limit(2))
+			time_diff = abs(res[0]['timestamp'] - res[1]['timestamp'])
+			diff_thres = WORKING_THRESHOLD * 60000.0
+
+			if time_diff < diff_thres:
+				'on live'
+				info['keep_working_time'] = myquery['keep_working_time'] + time_diff
+
 			newvalues = {"$set": info}
 			self.ranking.update_one(myquery, newvalues)
 			print(f"Updated ranklist: from {myquery} to {info}")
@@ -509,24 +525,69 @@ class MongoDB(object):
 		]
 		return {'data': data, 'indicator': indicator}
 
+	def build_huolonglive_tracker(self):
+		'track every man status on the rank list, then shows those man who is working'
+		all_man_list = list(self.ranking.find({}, { '_id': 1, 'man_nick_name': 1 }))
+		current_time = int(time.time() * 1000.0)
+		working_man_list = []
+		for mid in all_man_list:
+			'Find the chart of this man'
+			res = list(self.mydb[MID_TABLE_OF + str(mid['_id'])].find().sort("timestamp", -1).limit(1))
+			past_danmaku_time = res[0]['timestamp']
+			# If appear within 5 mins
+			diff_thres = WORKING_THRESHOLD * 60000.0
+			time_diff = abs(current_time - past_danmaku_time)
+			if time_diff < diff_thres:
+				'on live'
+				print('on live')
+				room_info = list(self.roomid_info.find({'_id': res[0]['roomid']}))[0]['room_nick_name']
+				mid['room_info'] = room_info
+				working_man_list.append(mid)
+			else:
+				'nope'
+				print(f'摸鱼: {mid}')
+				find_res = list(self.ranking.find({'_id': mid['_id']}))[0]
+				self.ranking.update_one(find_res, {"$set": {'keep_working_time': 0}})
+
+		fin_res = []
+		for single_work_man in working_man_list:
+			room_info = single_work_man['room_info']
+			nick_name = single_work_man['man_nick_name']
+			'Get minutes'
+			'For some reason, at least the working time is 1 minutes'
+			working_time = max(1, list(self.ranking.find({'_id':single_work_man['_id']}))[0]['keep_working_time']/60000.0)
+			fin_res.append(
+				{'name': f"{nick_name}: {room_info}",
+				 'value': working_time}
+			)
+		if len(fin_res) > 0:
+			return fin_res
+		else:
+			return [{'name': '摸鱼之王/黑暗剑', 'value': 21}]
+
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
   'roomid': 13946381,
-  'mid': 1395983,
+  'mid': 13967,
   'uname': '蒼月夢aitoyume',
-  'timestamp': 1583301481099,
+  'timestamp': 1583301485000,
    'message': "测试～"
 	}
 	db = MongoDB()
+
 	# Update patch 1
 	# with open("update01.py", "r") as f:
 	# 	exec(f.read())
 	# pdb.set_trace()
-	print(db.obtain_current_rank(13967))
-	db.find_total_rank()
+	# print(db.obtain_current_rank(13967))
+	# db.find_total_rank()
 	# db.update_roomid_info_and_table(mydict)
 	start_time = time.time()
+	# db.update_mid_info_and_table_and_ranking(mydict)
+	# pdb.set_trace()
+	pprint.pprint(db.build_huolonglive_tracker())
+	# pdb.set_trace()
 	# res = db.get_face_and_sign(13967)
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# db.find_total_rank()
@@ -534,7 +595,7 @@ if __name__ == '__main__':
 	# res = db.build_message_room_persentage(13967)
 	# db.build_man_chart(22038007)
 	# print(db.obtain_total_danmaku_count(13967))
-	print(db.build_radar_chart(2907459))
+	# print(db.build_radar_chart(2907459))
 
 	# print(db.real_time_monitor_info(13967))
 	# print(db.obtain_current_rank(13967))

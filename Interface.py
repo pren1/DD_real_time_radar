@@ -53,18 +53,11 @@ def processjson():
 		                'data': db.build_radar_chart(uid)
 		                })
 
-
-	# if chart_type == 'danmaku_counter':
-	# 	print('danmaku_counter')
-	# 	return jsonify({'code': 3, 'message': 'danmaku counts', 'data': db.obtain_total_danmaku_count(uid)})
-	#
-	# if chart_type == 'rank':
-	# 	print('Rank')
-	# 	return jsonify({'code': 4, 'message': 'rank of this man', 'data': db.obtain_current_rank(uid)})
-	#
-	# if chart_type == 'isworking':
-	# 	print("work or not")
-	# 	return jsonify({'code':5, 'message': 'whether this man is working or not', 'data': db.real_time_monitor_info(uid)})
+	if chart_type == 'monitor':
+		print('monitor!')
+		return jsonify({'code': 5, 'message': 'monitor',
+		                'data': db.build_huolonglive_tracker()
+		                })
 
 	if request.args.get('roomid') != None and request.args.get('roomid') != 'undefined':
 		roomid = int(request.args.get('roomid'))
