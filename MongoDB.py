@@ -540,31 +540,42 @@ class MongoDB(object):
 			time_diff = abs(current_time - past_danmaku_time)
 			if time_diff < diff_thres:
 				'on live'
-				print('on live')
+				# print('on live')
 				room_info = list(self.roomid_info.find({'_id': res[0]['roomid']}))[0]['room_nick_name']
 				mid['room_info'] = room_info
 				working_man_list.append(mid)
 			else:
 				'nope'
-				print(f'摸鱼: {mid}')
+				# print(f'摸鱼: {mid}')
 				find_res = list(self.ranking.find({'_id': mid['_id']}))[0]
 				self.ranking.update_one(find_res, {"$set": {'keep_working_time': 0}})
-
 		fin_res = []
+		room_dict = {}
 		for single_work_man in working_man_list:
 			room_info = single_work_man['room_info']
 			nick_name = single_work_man['man_nick_name']
 			'Get minutes'
 			'For some reason, at least the working time is 1 minutes'
-			working_time = max(1, list(self.ranking.find({'_id':single_work_man['_id']}))[0]['keep_working_time']/60000.0)
+			working_time = int(max(1, list(self.ranking.find({'_id':single_work_man['_id']}))[0]['keep_working_time']/60000.0))
 			fin_res.append(
-				{'name': f"{nick_name}: {room_info}",
+				{'name': f"{nick_name}",
 				 'value': working_time}
 			)
-		if len(fin_res) > 0:
-			return fin_res
+			if room_info in room_dict:
+				room_dict[room_info] += 1
+			else:
+				room_dict[room_info] = 1
+
+		inner_room_info = []
+		for single_room in room_dict:
+			inner_room_info.append(
+				{'name': single_room,
+				 'value': room_dict[single_room]}
+			)
+		if len(fin_res) > 0 and len(inner_room_info):
+			return {'man_value': fin_res, 'room_value': inner_room_info}
 		else:
-			return [{'name': '摸鱼之王/黑暗剑', 'value': 21}]
+			return {'man_value': [{'name': '黑暗剑', 'value': 22}], 'room_value': [{'name': '摸鱼之王', 'value': 22}]}
 
 if __name__ == '__main__':
 	mydict = {
@@ -575,8 +586,8 @@ if __name__ == '__main__':
   'timestamp': 1583301485000,
    'message': "测试～"
 	}
-	db = MongoDB()
-	db.build_message_room_persentage(13967)
+	db = MongoDB(update_rank_list=False)
+	# db.build_message_room_persentage(13967)
 	# Update patch 1
 	# with open("update01.py", "r") as f:
 	# 	exec(f.read())
