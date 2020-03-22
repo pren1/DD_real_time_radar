@@ -63,7 +63,8 @@ class MongoDB(object):
 		return data['face'], data['sign']
 
 	def obtain_current_rank(self, mid):
-		rank_list = list(self.ranking.find())
+		'Do not forget to sort the ranking list'
+		rank_list = list(self.ranking.find().sort("danmaku_len_count", -1))
 		rank = 1
 		for single_one in rank_list:
 			if single_one['_id'] == mid:
@@ -74,7 +75,7 @@ class MongoDB(object):
 
 	def obtain_total_danmaku_count(self, mid):
 		'How many danmaku intotal did this person sent'
-		return list(self.ranking.find({'_id':mid}))[0]['danmaku_len_count']  + random.randint(0, 1000)
+		return list(self.ranking.find({'_id':mid}))[0]['danmaku_len_count'] + random.randint(0, 1000)
 
 	def update_the_original_rank_list(self):
 		'Up to date!'
@@ -522,6 +523,7 @@ if __name__ == '__main__':
 	# with open("update01.py", "r") as f:
 	# 	exec(f.read())
 	# pdb.set_trace()
+	print(db.obtain_current_rank(13967))
 	db.find_total_rank()
 	# db.update_roomid_info_and_table(mydict)
 	start_time = time.time()
