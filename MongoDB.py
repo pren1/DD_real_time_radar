@@ -24,7 +24,7 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		self.update_the_original_rank_list()
+		# self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -99,8 +99,10 @@ class MongoDB(object):
 	def find_total_rank(self):
 		'Up to date!'
 		# pprint.pprint(self.ranking)
+		# pdb.set_trace()
 		res = []
-		for data in self.ranking.find():
+		'do not forget to sort the rank list!'
+		for data in self.ranking.find().sort("danmaku_len_count", -1):
 			find_target_name = data['man_nick_name']
 			if len(find_target_name) > 0:
 				res.append({
@@ -520,7 +522,8 @@ if __name__ == '__main__':
 	# with open("update01.py", "r") as f:
 	# 	exec(f.read())
 	# pdb.set_trace()
-	db.update_roomid_info_and_table(mydict)
+	db.find_total_rank()
+	# db.update_roomid_info_and_table(mydict)
 	start_time = time.time()
 	# res = db.get_face_and_sign(13967)
 	# db.update_mid_info_and_table_and_ranking(mydict)
