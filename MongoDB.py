@@ -14,7 +14,7 @@ import numpy as np
 from scipy.stats import entropy
 
 class MongoDB(object):
-	def __init__(self):
+	def __init__(self, update_rank_list = False):
 		'To use this service, you need to install MongoDB first'
 		self.myclient = pymongo.MongoClient(MONGODB_LOCAL)
 		self.mydb = self.myclient[DATABASE_NAME]
@@ -24,7 +24,8 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
-		# self.update_the_original_rank_list()
+		if update_rank_list:
+			self.update_the_original_rank_list()
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
