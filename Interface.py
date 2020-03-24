@@ -39,12 +39,14 @@ def processjson():
 	if chart_type == 'man_status':
 		print("get the status of this person")
 		face, sign = db.get_face_and_sign(uid)
+		danmaku_counts, nick_name = db.obtain_total_danmaku_count(uid)
 		return jsonify({'code': 3, 'message': '[danmaku counts, rank of this man, whether this man is working or not, face, sign]',
-		                'data': {'danmaku_counts': db.obtain_total_danmaku_count(uid),
+		                'data': {'danmaku_counts': danmaku_counts,
 		                         'current_rank': db.obtain_current_rank(uid),
 		                         'is_working': db.real_time_monitor_info(uid),
 								 'face': face,
-		                         'sign': sign
+		                         'sign': sign,
+		                         'nick_name': nick_name
 		                         }})
 
 	if chart_type == 'radar':

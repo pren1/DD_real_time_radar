@@ -28,24 +28,24 @@ def get_nickname_of_mid(mid):
 def get_sign_and_face_of_mid(mid):
 	url = 'https://api.bilibili.com/x/space/acc/info?mid=' + str(mid)
 	res = requests.get(url)
-	face = res.json()['data']['face']
+	face = 'https' + res.json()['data']['face'][4:]
 	sign = res.json()['data']['sign']
 	time.sleep(0.5)
 	while len(face) == 0:
 		time.sleep(0.5)
 		print("Asking bilibili...just wait")
-		face = res.json()['data']['face']
+		face = 'https' + res.json()['data']['face'][4:]
 		sign = res.json()['data']['sign']
 	face = advance_face_link_director(face)
 	return face, sign
 
 def advance_face_link_director(face):
 	if face[-4:] == '.jpg':
-		return face + "_64x64.jpg"
+		return face + "_128x128.jpg"
 	elif face[-4:] == '.gif':
-		return face + "_64x64.gif"
+		return face + "_128x128.gif"
 	elif face[-4:] == '.png':
-		return face + "_64x64.png"
+		return face + "_128x128.png"
 
 def get_real_time(timestamp):
 	'change timestamp to real time'

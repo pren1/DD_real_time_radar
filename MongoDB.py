@@ -76,7 +76,8 @@ class MongoDB(object):
 
 	def obtain_total_danmaku_count(self, mid):
 		'How many danmaku intotal did this person sent'
-		return list(self.ranking.find({'_id':mid}))[0]['danmaku_len_count']
+		res = list(self.ranking.find({'_id':mid}))[0]
+		return res['danmaku_len_count'], res['man_nick_name']
 
 	def update_the_original_rank_list(self):
 		'Up to date!'
@@ -241,7 +242,7 @@ class MongoDB(object):
 				# {"$addFields": {
 				# 	"danmaku_room_persentage": {"$divide": ["$room_danmaku_count", '$_id.total']},
 				# }},
-				{"$sort": {"room_danmaku_count": -1}},
+				# {"$sort": {"room_danmaku_count": -1}},
 				{"$project": { "_id.total": 0}}
 			]))
 		front_end_res = []
@@ -484,6 +485,8 @@ class MongoDB(object):
 		danmaku_list = danmaku_list/np.sum(danmaku_list)
 		uniform_list = np.ones(len(danmaku_list))/len(danmaku_list)
 		precision = 1.0 - entropy(danmaku_list, uniform_list)
+		precision = min(1.0, max(0.0, precision))
+
 		'4. DD等级： 射程'
 		range = len(
 			list(
@@ -573,6 +576,7 @@ class MongoDB(object):
 				 'value': room_dict[single_room]}
 			)
 		if len(fin_res) > 0 and len(inner_room_info):
+			random.shuffle(fin_res)
 			return {'man_value': fin_res, 'room_value': inner_room_info}
 		else:
 			return {'man_value': [{'name': '黑暗剑', 'value': 22}], 'room_value': [{'name': '摸鱼之王', 'value': 22}]}
@@ -587,6 +591,7 @@ if __name__ == '__main__':
    'message': "测试～"
 	}
 	db = MongoDB(update_rank_list=False)
+	# print(db.obtain_total_danmaku_count(13967))
 	# db.build_message_room_persentage(13967)
 	# Update patch 1
 	# with open("update01.py", "r") as f:
