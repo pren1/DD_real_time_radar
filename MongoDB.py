@@ -37,7 +37,7 @@ class MongoDB(object):
 				'message': single['message'],
 				'timestamp': single['timestamp']
 			})
-		pprint.pprint(fin_res)
+		# pprint.pprint(fin_res)
 		return fin_res
 
 	def real_time_monitor_info(self, mid):
@@ -99,7 +99,7 @@ class MongoDB(object):
 			# pprint.pprint(list(self.ranking.find()))
 			# self.ranking.update({'_id': single_rank['_id']}, {'$set': single_rank})
 		print("Ranking list Updated")
-		pprint.pprint(list(self.ranking.find()))
+		# pprint.pprint(list(self.ranking.find()))
 		# pdb.set_trace()
 
 	def find_total_rank(self):
@@ -118,7 +118,7 @@ class MongoDB(object):
 					'face': data['face'],
 					'sign': data['sign']
 				})
-		pprint.pprint(res[:5])
+		# pprint.pprint(res[:5])
 		return res
 
 	# def find_rank_within_past_period(self, mydict, past_date = 90):
@@ -164,7 +164,7 @@ class MongoDB(object):
 		]))
 		'First, we put data into different year-month~'
 		year_month_slot = build_year_month_slot_dict(res)
-		pprint.pprint(year_month_slot)
+		# pprint.pprint(year_month_slot)
 		'Then, for each year month slot, we handle the data'
 		final_res = {}
 		for single_slot in year_month_slot:
@@ -180,7 +180,7 @@ class MongoDB(object):
 						data=month_level_format_change(current_level_man_info[single_man_slot], date_x_axis)
 					)
 				final_res[single_slot]['data'].append(month_level_feed_in_res)
-		pprint.pprint(final_res)
+		# pprint.pprint(final_res)
 		# pdb.set_trace()
 		return final_res
 
@@ -219,7 +219,7 @@ class MongoDB(object):
 					data=month_level_format_change(current_level_room_info[single_room_slot], date_x_axis)
 				)
 				final_res[single_slot]['data'].append(month_level_feed_in_res)
-		pprint.pprint(final_res)
+		# pprint.pprint(final_res)
 		return final_res
 
 	def build_message_room_persentage(self, mid):
@@ -255,7 +255,7 @@ class MongoDB(object):
 			roomid = single['_id']['roomid']
 			room_id_list.append({'roomid': roomid, 'name': name})
 		# pprint.pprint(front_end_res)
-		pprint.pprint(room_id_list)
+		# pprint.pprint(room_id_list)
 		return {'pie_data': front_end_res, 'roomid_list': room_id_list}
 
 	def update_everything_according_to_a_new_message(self, mydict):
