@@ -442,7 +442,7 @@ class MongoDB(object):
 		'deal with different properties'
 		'1. 弹幕数： 破坏力'
 		rank_length = len(list(self.ranking.find()))
-		power = (rank_length - self.obtain_current_rank(mid) + 1)/rank_length
+		power = ((rank_length - self.obtain_current_rank(mid) + 1)/rank_length) ** 3
 
 		'2. 最长弹幕连续：持续力'
 		time_list = list(
@@ -466,7 +466,7 @@ class MongoDB(object):
 			])
 		)
 		if len(time_list) > 0:
-			durability = time_list[0]['datediff']/(int(time.time() * 1000.0) - time_list[0]['second_date'])
+			durability = time_list[0]['datediff']/(int(time.time() * 1000.0) - time_list[0]['first_date'])
 		else:
 			durability = 1.0
 
@@ -517,7 +517,7 @@ class MongoDB(object):
 		else:
 			denominator = 15.0000
 			base = 0.8
-		speed = min(0.2 * speed / denominator + base + 0.2, 1.0)
+		speed = 0.2 * speed / denominator + base + 0.2
 		'6. potential'
 		potential = min(1 - (power + durability + precision + range + speed)/5. + 0.6, 1.0)
 		data = [{
