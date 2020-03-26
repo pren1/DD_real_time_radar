@@ -13,7 +13,7 @@ class update_data(object):
         self.radar_dict = {}
         self.huolonglive_tracker = {}
 
-        'Update once when initialized & take a look at time'
+        print('Update once when initialized & take a look at time')
         start_time = time.time()
         self.whole_data_bundle()
         self.period_seconds = int(time.time() - start_time) * 3
@@ -26,7 +26,8 @@ class update_data(object):
     def timer_func(self):
         next_call = time.time()
         while True:
-            print(datetime.datetime.now())
+            print(f"update data at: {datetime.datetime.now()}")
+            self.whole_data_bundle()
             next_call = next_call + self.period_seconds
             time.sleep(next_call - time.time())
 
