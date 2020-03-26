@@ -450,8 +450,8 @@ class MongoDB(object):
 				{'$match': {'timestamp': {'$gt': 0}}},
 				{"$group": {
 					"_id": "",
-					"first_date": {"$first": "$timestamp"},
-					"second_date": {"$last": "$timestamp"}
+					"first_date": {"$min": "$timestamp"},
+					"second_date": {"$max": "$timestamp"}
 					}
 				},
 				{"$project":
@@ -466,7 +466,7 @@ class MongoDB(object):
 			])
 		)
 		if len(time_list) > 0:
-			durability = time_list[0]['datediff']/(int(time.time() * 1000.0) - time_list[0]['first_date'])
+			durability = (int(time.time() * 1000.0) - time_list[0]['first_date'])/(int(time.time() * 1000.0) - 1564588800000)
 		else:
 			durability = 1.0
 
