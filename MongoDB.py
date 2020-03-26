@@ -107,6 +107,7 @@ class MongoDB(object):
 		# pprint.pprint(self.ranking)
 		# pdb.set_trace()
 		res = []
+		mid_list = []
 		'do not forget to sort the rank list!'
 		for data in self.ranking.find().sort("danmaku_len_count", -1):
 			find_target_name = data['man_nick_name']
@@ -118,8 +119,9 @@ class MongoDB(object):
 					'face': data['face'],
 					'sign': data['sign']
 				})
+				mid_list.append(data['_id'])
 		# pprint.pprint(res[:5])
-		return res
+		return res, mid_list
 
 	# def find_rank_within_past_period(self, mydict, past_date = 90):
 	# 	test = mydict['timestamp'] - 86400000*past_date
@@ -441,6 +443,7 @@ class MongoDB(object):
 		'1. 弹幕数： 破坏力'
 		rank_length = len(list(self.ranking.find()))
 		power = (rank_length - self.obtain_current_rank(mid) + 1)/rank_length
+
 		'2. 最长弹幕连续：持续力'
 		time_list = list(
 			self.mydb[MID_TABLE_OF + str(mid)].aggregate([
@@ -461,9 +464,11 @@ class MongoDB(object):
 					}
 				}
 			])
-		)[0]
-
-		durability = time_list['datediff']/(int(time.time() * 1000.0) - time_list['second_date'])
+		)
+		if len(time_list) > 0:
+			durability = time_list[0]['datediff']/(int(time.time() * 1000.0) - time_list[0]['second_date'])
+		else:
+			durability = 1.0
 
 		'3. 水群间隔： 精密度'
 		danmaku_period = list(self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
@@ -580,6 +585,19 @@ class MongoDB(object):
 			return {'man_value': fin_res, 'room_value': inner_room_info}
 		else:
 			return {'man_value': [{'name': '黑暗剑', 'value': 22}], 'room_value': [{'name': '摸鱼之王', 'value': 22}]}
+
+	def obtain_man_status(self, uid):
+		face, sign = self.get_face_and_sign(uid)
+		danmaku_counts, nick_name = self.obtain_total_danmaku_count(uid)
+		current_rank = self.obtain_current_rank(uid)
+		is_working = self.real_time_monitor_info(uid)
+		return {'danmaku_counts': danmaku_counts,
+			          'current_rank': current_rank,
+			          'is_working': is_working,
+			          'face': face,
+			          'sign': sign,
+			          'nick_name': nick_name
+			          }
 
 if __name__ == '__main__':
 	mydict = {

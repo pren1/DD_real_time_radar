@@ -3,8 +3,8 @@ from flask import jsonify
 from flask import request
 from flask_cors import *
 import pdb
-from MongoDB import MongoDB
-db = MongoDB()
+from update_data import update_data
+data_updater = update_data(update_rank_list=False)
 'interface to front end'
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -28,49 +28,42 @@ def processjson():
 
 	if chart_type == 'ladder':
 		# print("ladder")
-		return jsonify({'code': 0, 'message': 'return initialize rank_list', 'data': db.find_total_rank()})
+		return jsonify({'code': 0, 'message': 'return initialize rank_list', 'data': data_updater.total_rank_list})
 
 	if chart_type == 'pie':
-		return jsonify({'code': 1, 'message': 'pie data','data': db.build_message_room_persentage(uid)})
+		return jsonify({'code': 1, 'message': 'pie data','data': data_updater.message_room_persentage_dict[uid]})
 
 	if chart_type == 'bar':
-		return jsonify({'code': 2, 'message': 'bar whole data', 'data': db.build_man_chart(uid)})
+		return jsonify({'code': 2, 'message': 'bar whole data', 'data': data_updater.man_chart_dict[uid]})
 
 	if chart_type == 'man_status':
 		# print("get the status of this person")
-		face, sign = db.get_face_and_sign(uid)
-		danmaku_counts, nick_name = db.obtain_total_danmaku_count(uid)
 		return jsonify({'code': 3, 'message': '[danmaku counts, rank of this man, whether this man is working or not, face, sign]',
-		                'data': {'danmaku_counts': danmaku_counts,
-		                         'current_rank': db.obtain_current_rank(uid),
-		                         'is_working': db.real_time_monitor_info(uid),
-								 'face': face,
-		                         'sign': sign,
-		                         'nick_name': nick_name
-		                         }})
+		                'data': data_updater.man_status_dict[uid]})
 
 	if chart_type == 'radar':
 		# print("Radar!")
 		return jsonify({'code': 4, 'message': 'radar map',
-		                'data': db.build_radar_chart(uid)
+		                'data': data_updater.radar_dict[uid]
 		                })
 
 	if chart_type == 'monitor':
 		# print('monitor!')
 		return jsonify({'code': 5, 'message': 'monitor',
-		                'data': db.build_huolonglive_tracker()
+		                'data': data_updater.huolonglive_tracker
 		                })
 
+	'For the room related part, I do not save those things yet'
 	if request.args.get('roomid') != None and request.args.get('roomid') != 'undefined':
 		roomid = int(request.args.get('roomid'))
 		# print(roomid)
 		if chart_type == 'message':
 			# print("ask for message of mid in a room")
-			return jsonify({'code': 6, 'message': 'return message of a man in a room', 'data': db.get_man_messages(mid=uid, roomid=roomid)})
+			return jsonify({'code': 6, 'message': 'return message of a man in a room', 'data': data_updater.db.get_man_messages(mid=uid, roomid=roomid)})
 
 		if chart_type == 'room_info':
 			# print("Get room information")
-			return jsonify({'code': 7, 'message': "return room message", 'data': db.build_room_chart(roomid=roomid)})
+			return jsonify({'code': 7, 'message': "return room message", 'data': data_updater.db.build_room_chart(roomid=roomid)})
 	else:
 		# print("No roomid provided")
 		return jsonify({'code': -4, 'message': 'no roomid provided', 'data': []})
