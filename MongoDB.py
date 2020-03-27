@@ -207,10 +207,16 @@ class MongoDB(object):
 		year_month_slot = build_year_month_slot_dict(res)
 		'Then, for each year month slot, we handle the data'
 		final_res = {}
+		previous_slot = "2019-早期"
 		for single_slot in year_month_slot:
 			'Build a list for each slot'
 			current_level_room_info, date_x_axis = extract_suitable_timeline(year_month_slot[single_slot])
+			if date_x_axis == ['1970-01-01']:
+				date_x_axis = [previous_slot + "之前"]
 			final_res[single_slot] = {'data': [], 'x_axis': date_x_axis}
+			# print(date_x_axis)
+			previous_slot = date_x_axis[0]
+
 			# pprint.pprint(current_level_res)
 			# pprint.pprint(date_x_axis)
 			'Then, we could iterate the date & roomid here'
@@ -621,6 +627,8 @@ if __name__ == '__main__':
 	start_time = time.time()
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# pdb.set_trace()
+	db.build_man_chart(13967)
+	pdb.set_trace()
 	pprint.pprint(db.build_huolonglive_tracker())
 	# pdb.set_trace()
 	# res = db.get_face_and_sign(13967)

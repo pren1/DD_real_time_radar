@@ -16,7 +16,7 @@ class update_data(object):
         print('Update once when initialized & take a look at time')
         start_time = time.time()
         self.whole_data_bundle()
-        self.period_seconds = int(time.time() - start_time) * 3
+        self.period_seconds = int(time.time() - start_time) * 5
         print("--- %s seconds ---" % (self.period_seconds))
 
     def begin_update_data_periodically(self):
@@ -27,7 +27,10 @@ class update_data(object):
         next_call = time.time()
         while True:
             print(f"update data at: {datetime.datetime.now()}")
+            start_time = time.time()
             self.whole_data_bundle()
+            self.period_seconds = int(time.time() - start_time) * 5
+            print("--- %s seconds ---" % (self.period_seconds))
             next_call = next_call + self.period_seconds
             time.sleep(next_call - time.time())
 
