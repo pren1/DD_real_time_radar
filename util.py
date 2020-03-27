@@ -71,8 +71,10 @@ def number_to_alphabet(number):
 		return 'C'
 	elif number < 0.8:
 		return 'B'
-	else:
+	elif number <= 1.0:
 		return 'A'
+	else:
+		return '??'
 
 def range_value(range):
 	if range < 5:
