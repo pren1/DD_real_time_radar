@@ -207,16 +207,10 @@ class MongoDB(object):
 		year_month_slot = build_year_month_slot_dict(res)
 		'Then, for each year month slot, we handle the data'
 		final_res = {}
-		previous_slot = "2019-早期"
 		for single_slot in year_month_slot:
 			'Build a list for each slot'
 			current_level_room_info, date_x_axis = extract_suitable_timeline(year_month_slot[single_slot])
-			if date_x_axis == ['1970-01-01']:
-				date_x_axis = [previous_slot + "之前"]
 			final_res[single_slot] = {'data': [], 'x_axis': date_x_axis}
-			# print(date_x_axis)
-			previous_slot = date_x_axis[0]
-
 			# pprint.pprint(current_level_res)
 			# pprint.pprint(date_x_axis)
 			'Then, we could iterate the date & roomid here'
@@ -226,8 +220,14 @@ class MongoDB(object):
 					name=list(self.roomid_info.find({'_id':single_room_slot}))[0]['room_nick_name'],
 					data=month_level_format_change(current_level_room_info[single_room_slot], date_x_axis)
 				)
+				# print(month_level_feed_in_res)
+				# print(single_slot)
 				final_res[single_slot]['data'].append(month_level_feed_in_res)
+		if '1970-01' in final_res:
+			final_res['1970-01']['x_axis'] = ['2019早期数据']
+			final_res['早期数据'] = final_res.pop('1970-01')
 		# pprint.pprint(final_res)
+		# pdb.set_trace()
 		return final_res
 
 	def build_message_room_persentage(self, mid):
