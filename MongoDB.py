@@ -565,9 +565,11 @@ class MongoDB(object):
 				self.ranking.update_one(find_res, {"$set": {'keep_working_time': 0}})
 		fin_res = []
 		room_dict = {}
+		user_id_mapping = {}
 		for single_work_man in working_man_list:
 			room_info = single_work_man['room_info']
 			nick_name = single_work_man['man_nick_name']
+			user_id = single_work_man['_id']
 			'Get minutes'
 			'For some reason, at least the working time is 1 minutes'
 			working_time = int(max(1, list(self.ranking.find({'_id':single_work_man['_id']}))[0]['keep_working_time']/60000.0))
@@ -575,22 +577,26 @@ class MongoDB(object):
 				{'name': f"{nick_name}",
 				 'value': working_time}
 			)
+			user_id_mapping[nick_name] = user_id
 			if room_info in room_dict:
 				room_dict[room_info] += 1
 			else:
 				room_dict[room_info] = 1
 
 		inner_room_info = []
+		room_id_mapping = {}
 		for single_room in room_dict:
 			inner_room_info.append(
 				{'name': single_room,
 				 'value': room_dict[single_room]}
 			)
+			room_id_mapping[single_room] = list(self.roomid_info.find({'room_nick_name':single_room}))[0]['_id']
 		if len(fin_res) > 0 and len(inner_room_info):
 			random.shuffle(fin_res)
-			return {'man_value': fin_res, 'room_value': inner_room_info}
+			return {'man_value': fin_res, 'room_value': inner_room_info, 'user_id_mapping': user_id_mapping, 'room_id_mapping': room_id_mapping}
 		else:
-			return {'man_value': [{'name': '黑暗剑', 'value': 22}], 'room_value': [{'name': '摸鱼之王', 'value': 22}]}
+			return {'man_value': [{'name': '黑暗剑', 'value': 22}], 'room_value': [{'name': '摸鱼之王', 'value': 22}],
+			        'user_id_mapping': {'黑暗剑': 15810}, 'room_id_mapping': {'摸鱼之王': 545318}}
 
 	def obtain_man_status(self, uid):
 		face, sign = self.get_face_and_sign(uid)
@@ -628,8 +634,8 @@ if __name__ == '__main__':
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# pdb.set_trace()
 	# db.build_man_chart(13967)
-	db.build_man_chart(351290)
-	pdb.set_trace()
+	# db.build_man_chart(351290)
+	# pdb.set_trace()
 	pprint.pprint(db.build_huolonglive_tracker())
 	# pdb.set_trace()
 	# res = db.get_face_and_sign(13967)
