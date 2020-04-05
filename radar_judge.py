@@ -1,4 +1,4 @@
-from MongoDB import MongoDB
+#from MongoDB import MongoDB
 from constants import *
 import datetime
 import time
@@ -8,6 +8,14 @@ get_days = lambda d1,d2: (datetime.datetime.strptime(d2, "%Y-%m-%d") - \
 	datetime.datetime.strptime(d1, "%Y-%m-%d")).days
 
 '最长高强度同传时间'
+
+def get_room_name(db, roomid):
+	name = db.roomid_info.find_one({'_id':roomid})
+	if name == None:
+		return ""
+	else:
+		return name['room_nick_name']
+
 def build_max_length(db, mid):
 	get_room_name = lambda roomid: db.roomid_info.find_one({'_id':roomid})['room_nick_name']
 	time_list = (
@@ -108,6 +116,7 @@ def anti_moyu(db, mid):
 	else:
 		return (len(valid) / get_days(valid[0]['_id'],valid[-1]['_id']))** .3
 
+"""
 if __name__ == '__main__':
 	db = MongoDB()
 	
@@ -130,3 +139,4 @@ if __name__ == '__main__':
 	print(anti_moyu(db, 27212086))
 	print(anti_moyu(db, 28232182))
 	print(anti_moyu(db, 2907459))
+"""
