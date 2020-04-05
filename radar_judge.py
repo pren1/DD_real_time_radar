@@ -17,7 +17,6 @@ def get_room_name(db, roomid):
 		return name['room_nick_name']
 
 def build_max_length(db, mid):
-	get_room_name = lambda roomid: db.roomid_info.find_one({'_id':roomid})['room_nick_name']
 	time_list = (
 		db.mydb[MID_TABLE_OF + str(mid)].aggregate([
 			{"$sort":{"timestamp":1}},
@@ -46,7 +45,7 @@ def build_max_length(db, mid):
 				max_room = now_room
 			now_room = d['roomid']
 			start_time = now_time
-	return max_time/1000/3600, get_room_name(max_room), get_date(max_start_time)
+	return max_time/1000/3600, get_room_name(db, max_room), get_date(max_start_time)
 '平均每分钟字数'
 def build_speed(db, mid):
 	time_list = (
