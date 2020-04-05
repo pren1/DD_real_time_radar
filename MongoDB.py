@@ -12,6 +12,7 @@ import time
 from datetime import datetime
 import numpy as np
 from scipy.stats import entropy
+from radar_judge import *
 
 class MongoDB(object):
 	def __init__(self, update_rank_list = False):
@@ -446,99 +447,68 @@ class MongoDB(object):
 
 	def build_radar_chart(self, mid):
 		'deal with different properties'
+
 		'1. 弹幕数： 破坏力'
 		rank_length = len(list(self.ranking.find()))
 		power = ((rank_length - self.obtain_current_rank(mid) + 1)/rank_length) ** 3
 
-		'2. 最长弹幕连续：持续力'
-		time_list = list(
-			self.mydb[MID_TABLE_OF + str(mid)].aggregate([
-				{'$match': {'timestamp': {'$gt': 0}}},
-				{"$group": {
-					"_id": "",
-					"first_date": {"$min": "$timestamp"},
-					"second_date": {"$max": "$timestamp"}
-					}
-				},
-				{"$project":
-					{
-						"datediff": {
-							"$subtract": ["$first_date", "$second_date"]
-						},
-						"first_date": "$first_date",
-						"second_date": "$second_date"
-					}
-				}
-			])
-		)
-		if len(time_list) > 0:
-			durability = (int(time.time() * 1000.0) - time_list[0]['first_date'])/(int(time.time() * 1000.0) - 1564588800000)
-		else:
-			durability = 1.0
+		'2. 最长高强度同传时间：持续力'
+		durability = build_max_length(self, mid)
 
-		'3. 水群间隔： 精密度'
-		danmaku_period = list(self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
-			{"$project": {
-				"_id": {
-					"$toDate": {
-						"$toLong": "$timestamp"
-					}
-				}
-			}},
-			{"$group": {
-				"_id": {"date_val": {"$dateToString": {"format": "%Y-%m", "date": "$_id"}}},
-				"count": {"$sum": 1},
-			}},
-			{"$sort": {"_id.date_val": -1}}
-		]))
-
-		danmaku_list = np.asarray([x['count'] for x in danmaku_period])
-		danmaku_list = danmaku_list/np.sum(danmaku_list)
-		uniform_list = np.ones(len(danmaku_list))/len(danmaku_list)
-		precision = 1.0 - entropy(danmaku_list, uniform_list)
-		precision = min(1.0, max(0.0, precision))
-
-		'4. DD等级： 射程'
-		range = len(
-			list(
-				self.mydb[MID_TABLE_OF + f"{mid}"].find().distinct("roomid")
-			)
-		)
-		range = range_value(range)
-		'5. 平均弹幕长度：speed'
+		'3. 平均弹幕长度：字长'
 		danmaku_information = list(self.ranking.find({'_id': mid}))[0]
-		speed = (danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])
-		if speed < 6.8200:
+		danmaku_len = (danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])
+		if danmaku_len < 6.8200:
 			denominator = 6.8200
 			base = 0.0
-		elif speed < 7.6600:
+		elif danmaku_len < 7.6600:
 			denominator = 7.6600
 			base = 0.2
-		elif speed < 9.2800:
+		elif danmaku_len < 9.2800:
 			denominator = 9.2800
 			base = 0.4
-		elif speed < 10.6400:
+		elif danmaku_len < 10.6400:
 			denominator = 10.6400
 			base = 0.6
 		else:
 			denominator = 15.0000
 			base = 0.8
-		speed = 0.2 * speed / denominator + base + 0.2
-		'6. potential'
-		potential = min(1 - (power + durability + precision + range + speed)/5. + 0.6, 1.0)
+		danmaku_len = 0.2 * danmaku_len / denominator + base + 0.2
+
+		'4. DD范围指数： 射程'
+		dd_range = range_value(DD_range(self, mid))
+
+		'5. 反摸鱼指数： 肝'
+		hardworking = anti_moyu(self, mid)
+
+		'6. 平均每分钟字数：攻速'
+		speed = build_speed(self, mid)
+		
+		'标准化&统计'
+		max_value = [1.0, 3.0, 1.0, 1.0, 1.0, 90.0]
+		value = [power, durability[0], danmaku_len, dd_range, hardworking, speed]
+		value = [round(v, 2) for v in value]
+		standard = [round(min(1.2, value[i] / max_value[i]), 2) for i in range(6)] #允许最多达到表盘数值的1.2倍
+		#points = [round(v*100) for v in standard]
 		data = [{
-                    'value': [power, durability, precision, range, speed, potential]
+                    'value': standard
                 }]
 
 		indicator = [
-			{'name': f'破坏力{number_to_alphabet(power)}', 'max': 1.0},
-			{'name': f'持续力{number_to_alphabet(durability)}', 'max': 1.0},
-			{'name': f'精密动作性{number_to_alphabet(precision)}', 'max': 1.0},
-			{'name': f'射程距离{number_to_alphabet(range)}', 'max': 1.0},
-			{'name': f'速度{number_to_alphabet(speed)}', 'max': 1.0},
-			{'name': f'成长性{number_to_alphabet(potential)}', 'max': 1.0}
+			{'name': f'破坏力{number_to_alphabet(standard[0])}', 'max': 1.0},
+			{'name': f'持续力{number_to_alphabet(standard[1])}', 'max': 1.0},
+			{'name': f'字长{number_to_alphabet(standard[2])}', 'max': 1.0},
+			{'name': f'射程{number_to_alphabet(standard[3])}', 'max': 1.0},
+			{'name': f'肝{number_to_alphabet(standard[4])}', 'max': 1.0},
+			{'name': f'攻速{number_to_alphabet(standard[5])}', 'max': 1.0}
 		]
-		return {'data': data, 'indicator': indicator}
+
+		others = [{
+			'primary_value': value,
+			'longest_room':durability[1],
+			'longest_date': durability[2]
+		}]
+		return {'data': data, 'indicator': indicator, 'others': others}
 
 	def build_huolonglive_tracker(self):
 		'track every man status on the rank list, then shows those man who is working'
@@ -631,12 +601,14 @@ if __name__ == '__main__':
 	# db.find_total_rank()
 	# db.update_roomid_info_and_table(mydict)
 	start_time = time.time()
+	print(db.build_radar_chart(13967))
+	print(db.build_radar_chart(27212086))
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# pdb.set_trace()
 	# db.build_man_chart(13967)
 	# db.build_man_chart(351290)
 	# pdb.set_trace()
-	pprint.pprint(db.build_huolonglive_tracker())
+	#pprint.pprint(db.build_huolonglive_tracker())
 	# pdb.set_trace()
 	# res = db.get_face_and_sign(13967)
 	# db.update_mid_info_and_table_and_ranking(mydict)
@@ -659,7 +631,7 @@ if __name__ == '__main__':
 	# db.build_message_room_persentage(13967)
 	# db.update_everything_according_to_a_new_message(mydict)
 	print("--- %s seconds ---" % (time.time() - start_time))
-	pdb.set_trace()
+	#pdb.set_trace()
 	# db.find_rank_within_past_period(mydict)
 	# db.update_everything_according_to_a_new_message(mydict)
 	# db.update_until_200220(mydict)
