@@ -487,8 +487,9 @@ class MongoDB(object):
 		
 		'标准化&统计'
 		max_value = [1.0, 3.0, 1.0, 1.0, 1.0, 90.0]
+		primary_value = [power, durability[0], primary_len, primary_range, hardworking, speed]
+		primary_value = [round(v, 2) for v in primary_value]
 		value = [power, durability[0], danmaku_len, dd_range, hardworking, speed]
-		value = [round(v, 2) for v in value]
 		standard = [round(min(1.2, value[i] / max_value[i]), 2) for i in range(6)] #允许最多达到表盘数值的1.2倍
 		#points = [round(v*100) for v in standard]
 		data = [{
@@ -505,7 +506,7 @@ class MongoDB(object):
 		]
 
 		others = {
-			'primary_value': [power, durability[0], primary_len, primary_range, hardworking, speed],
+			'primary_value': primary_value,
 			'longest_room':durability[1],
 			'longest_date': durability[2]
 		}
