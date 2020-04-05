@@ -457,7 +457,7 @@ class MongoDB(object):
 
 		'3. 平均弹幕长度：字长'
 		danmaku_information = list(self.ranking.find({'_id': mid}))[0]
-		danmaku_len = (danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])
+		danmaku_len = primary_len = (danmaku_information['danmaku_len_count']/danmaku_information['danmaku_count'])
 		if danmaku_len < 6.8200:
 			denominator = 6.8200
 			base = 0.0
@@ -476,7 +476,8 @@ class MongoDB(object):
 		danmaku_len = 0.2 * danmaku_len / denominator + base + 0.2
 
 		'4. DD范围指数： 射程'
-		dd_range = range_value(DD_range(self, mid))
+		primary_range = DD_range(self, mid)
+		dd_range = range_value(primary_range)
 
 		'5. 反摸鱼指数： 肝'
 		hardworking = anti_moyu(self, mid)
@@ -503,11 +504,11 @@ class MongoDB(object):
 			{'name': f'攻速{number_to_alphabet(standard[5])}', 'max': 1.0}
 		]
 
-		others = [{
-			'primary_value': value,
+		others = {
+			'primary_value': [power, durability[0], primary_len, primary_range, hardworking, speed],
 			'longest_room':durability[1],
 			'longest_date': durability[2]
-		}]
+		}
 		return {'data': data, 'indicator': indicator, 'others': others}
 
 	def build_huolonglive_tracker(self):
