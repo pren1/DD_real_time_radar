@@ -74,21 +74,10 @@ def number_to_alphabet(number):
 	elif number <= 1.0:
 		return 'A'
 	else:
-		return '??'
+		return 'EX'
 
-def range_value(range):
-	if range < 5:
-		return 0.1
-	elif range < 10:
-		return 0.3
-	elif range < 20:
-		return 0.5
-	elif range < 30:
-		return 0.7
-	elif range < 40:
-		return 0.9
-	else:
-		return 1.1
+def range_value(dd_range):
+	return dd_range**.5 / 5 #新算法下不是每个直播间发一条同传就算dd了，所以这里的属性值会给的大方一点
 
 if __name__ == '__main__':
 	face, sign = get_sign_and_face_of_mid(74928521)
