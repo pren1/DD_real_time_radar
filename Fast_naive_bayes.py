@@ -75,6 +75,11 @@ real_total_dict, fake_total_dict, prior_of_real, prior_of_fake, real_lowest_prob
 total_test_messages = test_real_messages.copy().append(test_fake_messages)
 total_test_labels = [1 for _ in test_real_messages] + [0 for _ in test_fake_messages]
 
-for (label, single_test_messages) in zip(total_test_labels, total_test_messages):
+correct_label_counter = []
+for (label, single_test_messages) in tqdm(zip(total_test_labels, total_test_messages)):
 	real_prob, fake_prob = predict_message(real_total_dict, fake_total_dict, prior_of_real, prior_of_fake, real_lowest_prob, fake_lowest_prob, single_test_messages)
-	pdb.set_trace()
+	pred_label = int(real_prob > fake_prob)
+	correct_label_counter.append(int(pred_label == label))
+	if not pred_label == label:
+		print(f"{single_test_messages}: {label}")
+print(f"So, naive bayes accuracy could be: {np.sum(correct_label_counter)/len(total_test_labels)}")
