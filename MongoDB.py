@@ -556,7 +556,6 @@ class MongoDB(object):
 
 	def build_huolonglive_tracker(self):
 		'track every man status on the rank list, then shows those man who is working'
-		self.update_the_original_rank_list()
 		all_man_list = list(self.ranking.find({}, { '_id': 1, 'man_nick_name': 1 }))
 		current_time = int(time.time() * 1000.0)
 		working_man_list = []
