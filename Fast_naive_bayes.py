@@ -3,6 +3,7 @@ import pdb
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
 
 def train_naive_bayes(real_messages, fake_messages):
 	total_messages = real_messages.copy().append(fake_messages)
@@ -76,10 +77,15 @@ total_test_messages = test_real_messages.copy().append(test_fake_messages)
 total_test_labels = [1 for _ in test_real_messages] + [0 for _ in test_fake_messages]
 
 correct_label_counter = []
+pred_results = []
 for (label, single_test_messages) in tqdm(zip(total_test_labels, total_test_messages)):
 	real_prob, fake_prob = predict_message(real_total_dict, fake_total_dict, prior_of_real, prior_of_fake, real_lowest_prob, fake_lowest_prob, single_test_messages)
 	pred_label = int(real_prob > fake_prob)
+	pred_results.append(pred_label)
 	correct_label_counter.append(int(pred_label == label))
 	if not pred_label == label:
 		print(f"{single_test_messages}: {label}")
 print(f"So, naive bayes accuracy could be: {np.sum(correct_label_counter)/len(total_test_labels)}")
+'draw metrices'
+print(confusion_matrix(total_test_labels, pred_results))
+print(classification_report(total_test_labels, pred_results))
