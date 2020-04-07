@@ -37,7 +37,6 @@ class update_data(object):
     def whole_data_bundle(self):
         'Fill in the data bundle'
         'first, calculate rank list'
-        self.db.update_the_original_rank_list()
         self.total_rank_list, mid_list = self.db.find_total_rank()
         self.huolonglive_tracker = self.db.build_huolonglive_tracker()
         'Time to update everything~'
