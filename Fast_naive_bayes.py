@@ -3,7 +3,6 @@ import pdb
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
-import jieba
 
 def train_naive_bayes(real_messages, fake_messages):
 	total_messages = real_messages.copy().append(fake_messages)
@@ -13,15 +12,14 @@ def train_naive_bayes(real_messages, fake_messages):
 	'features. First, you got all the distinct words'
 	total_dict = {}
 	for single_message in tqdm(total_messages):
-		cut_messages = jieba.cut(single_message, cut_all=False)
-		for single in cut_messages:
+		for single in single_message:
 			if single not in total_dict:
 				total_dict[single] = 0
+
 	'Then, train this by counting the number of each sets'
 	def train_empty_dict(dict, messages, sort=False):
 		for single_message in tqdm(messages):
-			cut_messages = jieba.cut(single_message, cut_all=False)
-			for single in cut_messages:
+			for single in single_message:
 				dict[single] += 1
 		'Let us apply the laplacian smoothing here'
 		smoothed_lowest_prob = 1 / (sum(dict.values()) + 2)
@@ -41,8 +39,7 @@ def shuffle_dataframe(df):
 def prob_calculation(prior, prob_dict, lowest_prob, message):
 	'calculate the prob of one class'
 	res_prob = prior
-	cut_messages = jieba.cut(message, cut_all=False)
-	for single_char in cut_messages:
+	for single_char in message:
 		if single_char in prob_dict:
 			res_prob *= prob_dict[single_char]
 		else:
