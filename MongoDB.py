@@ -287,6 +287,45 @@ class MongoDB(object):
 		# res = list(self.maindb.find({'mid': mydict['mid']}))[-1]
 		# print(res)
 
+	def judge_interperter(self, mid):
+		danmakus = self.maindb.aggregate([
+			{'$match':{'mid': mid, 'timestamp':{'$gt':0}}},
+			{'$sort':{'timestamp': 1}},
+			{'$project':
+				{
+					'_id': 0,
+					'roomid': 1,
+					'timestamp': 1
+				}
+			}
+		])
+		now_room , now_time = 0, 0
+		intp_process_cnt, in_process = 0, 0
+		danmaku_count = 0
+		for d in danmakus:
+			if d['timestamp'] != 0:
+				danmaku_count += 1
+				if d['roomid'] != now_room:
+					now_room = d['roomid']
+					if in_process >= 10:
+						intp_process_cnt += in_process
+					in_process = 1
+				else:
+					time_diff = (d['timestamp'] - now_time)//1000
+					if time_diff < 60*5: #5 minutes
+						in_process += 1
+					else:
+						if in_process >= 10:
+							intp_process_cnt += in_process
+						in_process = 1
+				now_time = d['timestamp'] 
+		if in_process >= 10:
+			intp_process_cnt += in_process
+		if danmaku_count == 0:
+			danmaku_count = 1
+		process_rate = intp_process_cnt / danmaku_count
+		return process_rate > 0.1
+
 	def update_mid_info_and_table_and_ranking(self, mydict):
 		'Up to date!'
 		'update mid if the upcoming nickname does not exist in the current mid_chart'
@@ -308,6 +347,9 @@ class MongoDB(object):
 												}, new = True)
 		count, threshold = info['danmaku_count'], info['danmaku_threshord']
 		if count == threshold:
+			if not self.judge_interperter(mid_val):
+				self.mid_info.update({'_id': mid_val}, {'$set':{'danmaku_threshord': threshold * 2}})
+				return
 			nickname = get_nickname_of_mid(mid_val)
 			'Assign this man a name'
 			self.mid_info.update({'_id': mid_val},{'$set':{'man_nick_name': nickname}})
@@ -603,8 +645,10 @@ if __name__ == '__main__':
 	# db.find_total_rank()
 	# db.update_roomid_info_and_table(mydict)
 	start_time = time.time()
-	print(db.build_radar_chart(13967))
-	print(db.build_radar_chart(27212086))
+	#print(db.build_radar_chart(13967))
+	#print(db.build_radar_chart(27212086))
+	#print(db.judge_interperter(13967))
+	#print(db.judge_interperter(28464598))
 	# db.update_mid_info_and_table_and_ranking(mydict)
 	# pdb.set_trace()
 	# db.build_man_chart(13967)
