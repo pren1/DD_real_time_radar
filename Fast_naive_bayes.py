@@ -44,6 +44,7 @@ def prob_calculation(prior, prob_dict, lowest_prob, message):
 		if single_char in prob_dict:
 			res_prob *= prob_dict[single_char]
 		else:
+			# print("This character outside")
 			res_prob *= lowest_prob
 	return res_prob
 
@@ -51,41 +52,88 @@ def predict_message(real_total_dict, fake_total_dict, prior_of_real, prior_of_fa
 	'naive bayes classifier'
 	real_prob = prob_calculation(prior_of_real, real_total_dict, real_lowest_prob, message)
 	fake_prob = prob_calculation(prior_of_fake, fake_total_dict, fake_lowest_prob, message)
+
+	total_prob = real_prob + fake_prob
 	'then, we normalize these probabilities'
-	real_prob /= real_prob + fake_prob
-	fake_prob /= real_prob + fake_prob
+	real_prob /= total_prob
+	fake_prob /= total_prob
 	return real_prob, fake_prob
 
-real_df = pd.read_csv('1.csv')
-real_messages = shuffle_dataframe(real_df['message'])
+def save_data_array_as_npy(input_array, file_name):
+	np.save(file_name, input_array)
 
-fake_df = pd.read_csv('0.csv')
-fake_messages = shuffle_dataframe(fake_df['message'])
+def load_data_array_from_npy(file_name):
+	return np.load(file_name, allow_pickle=True).tolist()
 
-'split train test sets'
-train_ratio = 0.8
-train_real_messages = real_messages[:int(len(real_messages) * train_ratio)]
-train_fake_messages = fake_messages[:int(len(fake_messages) * train_ratio)]
+class Naive_Bayes(object):
+	def __init__(self):
+		self.read_out_dict = load_data_array_from_npy('trained_naive_bayes.npy')
 
-test_real_messages = real_messages[int(len(real_messages) * train_ratio):]
-test_fake_messages = fake_messages[int(len(fake_messages) * train_ratio):]
+	def decide_class(self, single_test_messages):
+		real_prob, fake_prob = predict_message(
+			self.read_out_dict['real_total_dict'],
+			self.read_out_dict['fake_total_dict'],
+			self.read_out_dict['prior_of_real'],
+			self.read_out_dict['prior_of_fake'],
+			self.read_out_dict['real_lowest_prob'],
+			self.read_out_dict['fake_lowest_prob'], single_test_messages)
 
-real_total_dict, fake_total_dict, prior_of_real, prior_of_fake, real_lowest_prob, fake_lowest_prob = train_naive_bayes(train_real_messages, train_fake_messages)
+		pred_label = bool(real_prob > fake_prob)
+		return pred_label, f"Naive bayes labeled {single_test_messages} as {pred_label} with prob {max(real_prob, fake_prob)}"
 
-'Merge test cases'
-total_test_messages = test_real_messages.copy().append(test_fake_messages)
-total_test_labels = [1 for _ in test_real_messages] + [0 for _ in test_fake_messages]
+if __name__ == '__main__':
+	# NB_classifier = Naive_Bayes()
+	# is_interpretation, log_meg = NB_classifier.decide_class('(-_-)|||')
+	# pdb.set_trace()
 
-correct_label_counter = []
-pred_results = []
-for (label, single_test_messages) in tqdm(zip(total_test_labels, total_test_messages)):
-	real_prob, fake_prob = predict_message(real_total_dict, fake_total_dict, prior_of_real, prior_of_fake, real_lowest_prob, fake_lowest_prob, single_test_messages)
-	pred_label = int(real_prob > fake_prob)
-	pred_results.append(pred_label)
-	correct_label_counter.append(int(pred_label == label))
-	if not pred_label == label:
-		print(f"{single_test_messages}: {label}")
-print(f"So, naive bayes accuracy could be: {np.sum(correct_label_counter)/len(total_test_labels)}")
-'draw metrices'
-print(confusion_matrix(total_test_labels, pred_results))
-print(classification_report(total_test_labels, pred_results))
+	real_df = pd.read_csv('1.csv')
+	real_messages = shuffle_dataframe(real_df['message'])
+
+	fake_df = pd.read_csv('0.csv')
+	fake_messages = shuffle_dataframe(fake_df['message'])
+
+	'split train test sets'
+	train_ratio = 0.80
+	train_real_messages = real_messages[:int(len(real_messages) * train_ratio)]
+	train_fake_messages = fake_messages[:int(len(fake_messages) * train_ratio)]
+
+	test_real_messages = real_messages[int(len(real_messages) * train_ratio):]
+	test_fake_messages = fake_messages[int(len(fake_messages) * train_ratio):]
+
+	real_total_dict, fake_total_dict, prior_of_real, prior_of_fake, real_lowest_prob, fake_lowest_prob = train_naive_bayes(train_real_messages, train_fake_messages)
+
+	save_dict = {}
+	save_dict['real_total_dict'] = real_total_dict
+	save_dict['fake_total_dict'] = fake_total_dict
+	save_dict['prior_of_real'] = prior_of_real
+	save_dict['prior_of_fake'] = prior_of_fake
+	save_dict['real_lowest_prob'] = real_lowest_prob
+	save_dict['fake_lowest_prob'] = fake_lowest_prob
+
+	save_data_array_as_npy(save_dict, 'trained_naive_bayes')
+	read_out_dict = load_data_array_from_npy('trained_naive_bayes.npy')
+	# read_out_dict = save_dict
+	# pdb.set_trace()
+	'Merge test cases'
+	total_test_messages = test_real_messages.copy().append(test_fake_messages)
+	total_test_labels = [1 for _ in test_real_messages] + [0 for _ in test_fake_messages]
+
+	correct_label_counter = []
+	pred_results = []
+	for (label, single_test_messages) in tqdm(zip(total_test_labels, total_test_messages)):
+		real_prob, fake_prob = predict_message(
+			read_out_dict['real_total_dict'],
+			read_out_dict['fake_total_dict'],
+			read_out_dict['prior_of_real'],
+			read_out_dict['prior_of_fake'],
+			read_out_dict['real_lowest_prob'],
+			read_out_dict['fake_lowest_prob'], single_test_messages)
+		pred_label = int(real_prob > fake_prob)
+		pred_results.append(pred_label)
+		correct_label_counter.append(int(pred_label == label))
+		if not pred_label == label:
+			print(f"{single_test_messages}: {label}")
+	print(f"So, naive bayes accuracy could be: {np.sum(correct_label_counter)/len(total_test_labels)}")
+	'draw metrices'
+	print(confusion_matrix(total_test_labels, pred_results))
+	print(classification_report(total_test_labels, pred_results))
