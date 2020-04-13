@@ -82,10 +82,13 @@ class Naive_Bayes(object):
 		return pred_label, f"Naive bayes labeled {single_test_messages} as {pred_label} with prob {max(real_prob, fake_prob)}"
 
 if __name__ == '__main__':
-	# NB_classifier = Naive_Bayes()
-	# is_interpretation, log_meg = NB_classifier.decide_class('(-_-)|||')
-	# pdb.set_trace()
+	NB_classifier = Naive_Bayes()
 
+	import time
+	start_time = time.time()
+	is_interpretation, log_meg = NB_classifier.decide_class('(-_-)|||')
+	print("--- %s seconds ---" % (time.time() - start_time))
+	pdb.set_trace()
 	real_df = pd.read_csv('1.csv')
 	real_messages = shuffle_dataframe(real_df['message'])
 
