@@ -47,9 +47,12 @@ class update_data(object):
             self.radar_dict[uid] = self.db.build_radar_chart(uid)
         print("everything get updated")
 
+    def get_total_message(self, uid):
+        return self.db.total_message_obtain[uid]
+
 if __name__ == '__main__':
     data_updater = update_data(update_rank_list=False)
     # data_updater.begin_update_data_periodically()
-    # start_time = time.time()
-    # data_updater.whole_data_bundle()
-    # print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    data_updater.whole_data_bundle()
+    print("--- %s seconds ---" % (time.time() - start_time))

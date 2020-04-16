@@ -25,8 +25,36 @@ class MongoDB(object):
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
 		self.sorted_list = [] # Initialize the ranked top list
+		self.total_message_obtain = {}
 		if update_rank_list:
 			self.update_the_original_rank_list()
+			'Also, we build the message lists'
+			self.build_basic_message_sets()
+
+	def build_basic_message_sets(self):
+		_, mid_list = self.find_total_rank()
+		print("Building messages for each people in the rank list")
+		for uid in tqdm(mid_list):
+			self.total_message_obtain[uid] = self.get_all_danmaku(uid)
+
+	def update_message_sets(self, mydict):
+		'This set saves all the received danmakus'
+		uid = mydict['mid']
+		room_id_info = list(self.roomid_info.find({'_id':mydict['roomid']}))[0]['room_nick_name']
+		time_info = get_real_time(mydict['timestamp'])
+		insert_target = {'roomid': room_id_info,
+		                 'message': mydict['message'],
+		                 'date_val': time_info
+		                 }
+		if uid in self.total_message_obtain:
+			if room_id_info in self.total_message_obtain[uid]:
+				'At here, this is a list'
+				self.total_message_obtain[uid][room_id_info].insert(0, insert_target)
+			else:
+				self.total_message_obtain[uid][room_id_info] = [insert_target]
+		else:
+			self.total_message_obtain[uid] = {}
+			self.total_message_obtain[uid][room_id_info] = [insert_target]
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -199,7 +227,13 @@ class MongoDB(object):
 				"roomid": "$roomid"
 			}},
 			{"$group": {
-				"_id": {"roomid": "$roomid", "date_val": {"$dateToString": {"format": "%Y-%m-%d", "date": "$_id"}}},
+				"_id": {"roomid": "$roomid", "date_val": {"$dateToString": {
+					"format": "%Y-%m-%d",
+					"date": "$_id",
+					"timezone": "Asia/Shanghai"
+				}
+				}
+				        },
 				"count": {"$sum": 1},
 			}},
 			{"$sort": {"_id.date_val": -1}}
@@ -229,6 +263,8 @@ class MongoDB(object):
 			final_res['早期数据'] = final_res.pop('1970-01')
 		# pprint.pprint(final_res)
 		# pdb.set_trace()
+		'To get the accurate number'
+
 		return final_res
 
 	def build_message_room_persentage(self, mid):
@@ -273,6 +309,7 @@ class MongoDB(object):
 		self.update_maindb(mydict)
 		self.update_mid_info_and_table_and_ranking(mydict)
 		self.update_roomid_info_and_table(mydict)
+		self.update_message_sets(mydict)
 
 	def update_maindb(self, mydict):
 		'Just insert to the original chart'
@@ -625,16 +662,67 @@ class MongoDB(object):
 			          'nick_name': nick_name
 			          }
 
+	def get_all_danmaku(self, mid):
+		res = list(
+			self.mydb[MID_TABLE_OF + f"{mid}"].aggregate([
+				{"$project": {
+					"roomid": "$roomid",
+					"message": "$message",
+					"timeline": {
+						"$toDate": {
+							"$toLong": "$timestamp"
+						}
+					}
+				}},
+				{"$project": {
+					"_id": {"roomid": "$roomid",
+					        "message": "$message",
+					        "date_val": {
+						        "$dateToString": {
+									"format": "%Y-%m-%d %H:%M:%S",
+									"date": "$timeline",
+									"timezone": "Asia/Shanghai"
+										}
+									}
+							},
+					}
+				},
+				{"$sort": {"_id.date_val": -1}}
+			],
+			allowDiskUse=True
+			)
+		)
+		'Build room name dict'
+		room_info_dict = {}
+		room_id_list = list(self.roomid_info.find({}))
+		for single in room_id_list:
+			room_info_dict[single['_id']] = single['room_nick_name']
+
+		'save messages to dict according to the room_id'
+		danmaku_dict = {}
+		for single in res:
+			room_id = room_info_dict[single['_id']['roomid']]
+			single['_id']['roomid'] = room_id
+			if room_id in danmaku_dict:
+				danmaku_dict[room_id].append(single['_id'])
+			else:
+				danmaku_dict[room_id] = [single['_id']]
+		return danmaku_dict
+
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
   'roomid': 13946381,
-  'mid': 13967,
+  'mid': 139232167,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301485000,
    'message': "测试～"
 	}
 	db = MongoDB(update_rank_list=False)
+	# db.get_all_danmaku(351290)
+	db.build_basic_message_sets()
+	db.update_message_sets(mydict)
+	# db.get_all_danmaku(351290)
 	# print(db.obtain_total_danmaku_count(13967))
 	# db.build_message_room_persentage(13967)
 	# Update patch 1
