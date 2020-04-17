@@ -54,6 +54,12 @@ def processjson():
 		                'data': data_updater.huolonglive_tracker
 		                })
 
+	if chart_type == 'danmaku':
+
+		return jsonify({'code': 8, 'message': 'danmaku',
+		                'data': data_updater.get_total_message(uid)
+		                })
+
 	'For the room related part, I do not save those things yet'
 	if request.args.get('roomid') != None and request.args.get('roomid') != 'undefined':
 		roomid = int(request.args.get('roomid'))

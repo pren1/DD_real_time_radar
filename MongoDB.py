@@ -702,11 +702,25 @@ class MongoDB(object):
 		danmaku_dict = {}
 		for single in res:
 			room_id = room_info_dict[single['_id']['roomid']]
+			day_value = single['_id']['date_val'].split(' ')[0]
+			if day_value == '1970-01-01':
+				day_value = '早期数据'
 			single['_id']['roomid'] = room_id
-			if room_id in danmaku_dict:
-				danmaku_dict[room_id].append(single['_id'])
+			if day_value == '早期数据':
+				single['_id'] = {'同传弹幕': single['_id']['message'], '时间': '早期数据'}
 			else:
-				danmaku_dict[room_id] = [single['_id']]
+				single['_id'] = {'同传弹幕': single['_id']['message'], '时间': single['_id']['date_val']}
+			if room_id in danmaku_dict:
+				if day_value in danmaku_dict[room_id]:
+					danmaku_dict[room_id][day_value].append(single['_id'])
+				else:
+					danmaku_dict[room_id][day_value] = [single['_id']]
+			else:
+				danmaku_dict[room_id] = {}
+				danmaku_dict[room_id][day_value] = [single['_id']]
+		'Add time keys to each dict here'
+		for single_room in danmaku_dict:
+			danmaku_dict[single_room]['time_select'] = list(danmaku_dict[single_room].keys())
 		return danmaku_dict
 
 if __name__ == '__main__':
@@ -719,7 +733,7 @@ if __name__ == '__main__':
    'message': "测试～"
 	}
 	db = MongoDB(update_rank_list=False)
-	# db.get_all_danmaku(351290)
+	db.get_all_danmaku(351290)
 	db.build_basic_message_sets()
 	db.update_message_sets(mydict)
 	# db.get_all_danmaku(351290)

@@ -2,6 +2,7 @@ import datetime, threading, time
 from MongoDB import MongoDB
 import pdb
 from tqdm import tqdm
+import pprint
 
 class update_data(object):
     def __init__(self, update_rank_list):
@@ -48,7 +49,8 @@ class update_data(object):
         print("everything get updated")
 
     def get_total_message(self, uid):
-        return self.db.total_message_obtain[uid]
+        # pprint.pprint(self.db.total_message_obtain[uid])
+        return {'data': self.db.total_message_obtain[uid], 'roomid_list': list(self.db.total_message_obtain[uid].keys())}
 
 if __name__ == '__main__':
     data_updater = update_data(update_rank_list=False)
