@@ -4,7 +4,7 @@ from flask import request
 from flask_cors import *
 import pdb
 from update_data import update_data
-data_updater = update_data(update_rank_list=True)
+data_updater = update_data(update_rank_list=False)
 data_updater.begin_update_data_periodically()
 'interface to front end'
 app = Flask(__name__)

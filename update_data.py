@@ -17,7 +17,7 @@ class update_data(object):
         print('Update once when initialized & take a look at time')
         start_time = time.time()
         self.whole_data_bundle()
-        self.period_seconds = int(time.time() - start_time) * 5
+        self.period_seconds = int(time.time() - start_time) * 2
         print("--- %s seconds ---" % (self.period_seconds))
 
     def begin_update_data_periodically(self):
@@ -30,7 +30,7 @@ class update_data(object):
             print(f"update data at: {datetime.datetime.now()}")
             start_time = time.time()
             self.whole_data_bundle()
-            self.period_seconds = int(time.time() - start_time) * 5
+            self.period_seconds = int(time.time() - start_time) * 2
             print("--- %s seconds ---" % (self.period_seconds))
             next_call = next_call + self.period_seconds
             time.sleep(next_call - time.time())
@@ -46,6 +46,7 @@ class update_data(object):
             self.man_chart_dict[uid] = self.db.build_man_chart(uid)
             self.man_status_dict[uid] = self.db.obtain_man_status(uid)
             self.radar_dict[uid] = self.db.build_radar_chart(uid)
+        self.db.build_basic_message_sets()
         print("everything get updated")
 
     def get_total_message(self, uid):

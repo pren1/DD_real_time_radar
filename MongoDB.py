@@ -29,32 +29,32 @@ class MongoDB(object):
 		if update_rank_list:
 			self.update_the_original_rank_list()
 			'Also, we build the message lists'
-			self.build_basic_message_sets()
+			# self.build_basic_message_sets()
 
 	def build_basic_message_sets(self):
 		_, mid_list = self.find_total_rank()
-		print("Building messages for each people in the rank list")
+		# print("Building messages for each people in the rank list")
 		for uid in tqdm(mid_list):
 			self.total_message_obtain[uid] = self.get_all_danmaku(uid)
 
-	def update_message_sets(self, mydict):
-		'This set saves all the received danmakus'
-		uid = mydict['mid']
-		room_id_info = list(self.roomid_info.find({'_id':mydict['roomid']}))[0]['room_nick_name']
-		time_info = get_real_time(mydict['timestamp'])
-		insert_target = {'roomid': room_id_info,
-		                 'message': mydict['message'],
-		                 'date_val': time_info
-		                 }
-		if uid in self.total_message_obtain:
-			if room_id_info in self.total_message_obtain[uid]:
-				'At here, this is a list'
-				self.total_message_obtain[uid][room_id_info].insert(0, insert_target)
-			else:
-				self.total_message_obtain[uid][room_id_info] = [insert_target]
-		else:
-			self.total_message_obtain[uid] = {}
-			self.total_message_obtain[uid][room_id_info] = [insert_target]
+	# def update_message_sets(self, mydict):
+	# 	'This set saves all the received danmakus'
+	# 	uid = mydict['mid']
+	# 	room_id_info = list(self.roomid_info.find({'_id':mydict['roomid']}))[0]['room_nick_name']
+	# 	time_info = get_real_time(mydict['timestamp'])
+	# 	insert_target = {'roomid': room_id_info,
+	# 	                 'message': mydict['message'],
+	# 	                 'date_val': time_info
+	# 	                 }
+	# 	if uid in self.total_message_obtain:
+	# 		if room_id_info in self.total_message_obtain[uid]:
+	# 			'At here, this is a list'
+	# 			self.total_message_obtain[uid][room_id_info].insert(0, insert_target)
+	# 		else:
+	# 			self.total_message_obtain[uid][room_id_info] = [insert_target]
+	# 	else:
+	# 		self.total_message_obtain[uid] = {}
+	# 		self.total_message_obtain[uid][room_id_info] = [insert_target]
 
 	def get_man_messages(self, mid, roomid):
 		'return all the messages of this man'
@@ -309,7 +309,7 @@ class MongoDB(object):
 		self.update_maindb(mydict)
 		self.update_mid_info_and_table_and_ranking(mydict)
 		self.update_roomid_info_and_table(mydict)
-		self.update_message_sets(mydict)
+		# self.update_message_sets(mydict)
 
 	def update_maindb(self, mydict):
 		'Just insert to the original chart'
@@ -735,7 +735,7 @@ if __name__ == '__main__':
 	db = MongoDB(update_rank_list=False)
 	db.get_all_danmaku(351290)
 	db.build_basic_message_sets()
-	db.update_message_sets(mydict)
+	# db.update_message_sets(mydict)
 	# db.get_all_danmaku(351290)
 	# print(db.obtain_total_danmaku_count(13967))
 	# db.build_message_room_persentage(13967)
