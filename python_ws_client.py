@@ -1,12 +1,11 @@
 import socketio
 from MongoDB import MongoDB
 from Fast_naive_bayes import Naive_Bayes
-# from leader_board_drawer import leader_board_drawer
 
 class python_ws_client(object):
     def __init__(self):
         'Connect to dataset, connect to js server via ws'
-        self.mongo_db = MongoDB(update_rank_list=True)
+        self.mongo_db = MongoDB(update_rank_list=False)
         self.leader_board_index = 0
         self.sio = socketio.Client()
         self.sio.on('connect', self.socket_connected)
@@ -36,4 +35,4 @@ class python_ws_client(object):
 
 if __name__ == '__main__':
     ws_listenser = python_ws_client()
-    # ws_listenser.send_message()
+    ws_listenser.send_message()

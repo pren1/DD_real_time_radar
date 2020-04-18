@@ -13,6 +13,7 @@ from datetime import datetime
 import numpy as np
 from scipy.stats import entropy
 from radar_judge import *
+import csv
 
 class MongoDB(object):
 	def __init__(self, update_rank_list = False):
@@ -723,6 +724,18 @@ class MongoDB(object):
 			danmaku_dict[single_room]['time_select'] = list(danmaku_dict[single_room].keys())
 		return danmaku_dict
 
+	def look_into_roomlist(self):
+		res = list(self.roomid_info.find({}))
+		saved_res = [(x['room_nick_name'], x['_id']) for x in res ]
+		self.save_data_to_folders('监听名单.csv', saved_res)
+		pdb.set_trace()
+
+	# save data to target csv file
+	def save_data_to_folders(self, target_path, data):
+		writer = csv.writer(open(target_path, 'w'))
+		for row in data:
+			writer.writerow([row[0], row[1]])
+
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
@@ -733,6 +746,7 @@ if __name__ == '__main__':
    'message': "测试～"
 	}
 	db = MongoDB(update_rank_list=False)
+	db.look_into_roomlist()
 	db.get_all_danmaku(351290)
 	db.build_basic_message_sets()
 	# db.update_message_sets(mydict)
