@@ -18,8 +18,8 @@ class Socket_setting(object):
         'on received danmakus'
         is_interpretation, log_meg = self.NB_classifier.decide_class(message['message'])
         print(f"{log_meg}")
-        # if is_interpretation:
-        #     self.mongo_db.update_everything_according_to_a_new_message(message)
+        if is_interpretation:
+            self.mongo_db.update_everything_according_to_a_new_message(message)
 
     def watch_room(self, roomid):
         self.sio.emit("watch_room", roomid)

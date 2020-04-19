@@ -739,13 +739,14 @@ class MongoDB(object):
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
-  'roomid': 13946381,
+  'roomid': 1323381,
   'mid': 139232167,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301485000,
    'message': "测试～"
 	}
 	db = MongoDB(update_rank_list=False)
+	# db.update_everything_according_to_a_new_message(mydict)
 	db.look_into_roomlist()
 	db.get_all_danmaku(351290)
 	db.build_basic_message_sets()
