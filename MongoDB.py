@@ -25,6 +25,7 @@ class MongoDB(object):
 		self.roomid_info = self.mydb[ROOMID_INFO]
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
+		self.serverdb = self.mydb[SERVER_INFO_NAME]
 		self.sorted_list = [] # Initialize the ranked top list
 		self.total_message_obtain = {}
 		if update_rank_list:
@@ -363,6 +364,23 @@ class MongoDB(object):
 			danmaku_count = 1
 		process_rate = intp_process_cnt / danmaku_count
 		return process_rate > 0.1
+
+	def update_server_db_according_to_server_dict(self, serverdict):
+		server_id = serverdict['server id']
+		row = self.serverdb.find_one({'_id': server_id})
+		if row is None:
+			'cannot find this server, this should only happens at the beginning'
+			self.serverdb.insert_one({'_id': server_id,
+			                          'recent danmaku': serverdict['recent danmaku'],
+			                          'overhead': serverdict['overhead']
+			                          })
+		else:
+			self.serverdb.update({'_id': server_id}, {'$set':{'recent danmaku': serverdict['recent danmaku'],
+			                                                         'overhead': serverdict['overhead']}})
+		# 	print(info)
+		# test = list(self.serverdb.find({'_id': server_id}))
+		# pprint.pprint(test)
+		# pdb.set_trace()
 
 	def update_mid_info_and_table_and_ranking(self, mydict):
 		'Up to date!'
@@ -745,7 +763,16 @@ if __name__ == '__main__':
   'timestamp': 1583301485000,
    'message': "测试～"
 	}
+
+	Server_dict = {
+		'server id': '2',
+		'recent danmaku': "测试2",
+		'overhead': 9
+	}
+
 	db = MongoDB(update_rank_list=False)
+	db.update_server_db_according_to_server_dict(Server_dict)
+	pdb.set_trace()
 	# db.update_everything_according_to_a_new_message(mydict)
 	db.look_into_roomlist()
 	db.get_all_danmaku(351290)

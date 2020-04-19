@@ -16,8 +16,11 @@ class python_ws_client(object):
         self.global_lock=threading.Lock()
 
         self.open_room_list = []
-        self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
-        # self.ip_list = ['localhost']
+        # self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
+        self.ip_list = ['localhost']
+        self.server_id_dict = {}
+        for index, ip in enumerate(self.ip_list):
+            self.server_id_dict[ip] = index + 1
         self.socket_list = self.build_socket_dict_list_with_clients(self.ip_list)
         'Test the running time of target func'
         start_time = time.time()
@@ -49,6 +52,17 @@ class python_ws_client(object):
 
     def Schedual_roomid_to_clients(self):
         self.secheduler.renew_client_tasks_using_new_roomid_list(self.open_room_list)
+        print(self.secheduler.tempory_client_dict)
+        'Then, we could write into the database'
+        for single_key in self.secheduler.tempory_client_dict:
+            Server_dict = {
+                'server id': self.server_id_dict[single_key],
+                'recent danmaku': "测试",
+                'overhead': self.secheduler.tempory_client_dict[single_key]
+            }
+            self.global_lock.acquire()
+            self.mongo_db.update_server_db_according_to_server_dict(Server_dict)
+            self.global_lock.release()
 
     def begin_update_data_periodically(self):
         timerThread = threading.Thread(target=self.timer_func)
