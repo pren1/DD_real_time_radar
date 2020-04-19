@@ -369,7 +369,7 @@ class MongoDB(object):
 		return list(self.serverdb.find({}))
 
 	def update_server_db_according_to_server_dict(self, serverdict):
-		self.serverdb.drop()
+		# self.serverdb.drop()
 		server_id = serverdict['server id']
 		row = self.serverdb.find_one({'_id': server_id})
 		if row is None:

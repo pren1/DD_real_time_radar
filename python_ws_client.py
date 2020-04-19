@@ -16,8 +16,8 @@ class python_ws_client(object):
         self.global_lock=threading.Lock()
 
         self.open_room_list = []
-        # self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
-        self.ip_list = ['localhost']
+        self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
+        # self.ip_list = ['localhost']
         self.server_id_dict = {}
         for index, ip in enumerate(self.ip_list):
             self.server_id_dict[ip] = index + 1
