@@ -11,7 +11,7 @@ from Client_Scheduling import Client_Secheduler
 class python_ws_client(object):
     def __init__(self):
         'Connect to dataset, connect to js server via ws'
-        self.mongo_db = MongoDB(update_rank_list=False)
+        self.mongo_db = MongoDB(update_rank_list=True)
         self.NB_classifier = Naive_Bayes()
         self.global_lock=threading.Lock()
 
