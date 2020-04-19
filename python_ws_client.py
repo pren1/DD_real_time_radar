@@ -12,6 +12,7 @@ class python_ws_client(object):
     def __init__(self):
         'Connect to dataset, connect to js server via ws'
         self.mongo_db = MongoDB(update_rank_list=False)
+        self.mongo_db.clean_up_serverdb()
         self.NB_classifier = Naive_Bayes()
         self.global_lock=threading.Lock()
 
@@ -36,7 +37,7 @@ class python_ws_client(object):
         for single_ip in ip_list:
             res.append({
                 'ip': single_ip,
-                'socket': Socket_setting(self.mongo_db, self.NB_classifier, global_lock = self.global_lock, ip_address=single_ip, port=9003)
+                'socket': Socket_setting(self.mongo_db, self.NB_classifier, global_lock = self.global_lock, ip_address=single_ip, server_id = self.server_id_dict[single_ip], port=9003)
             })
         return res
 
@@ -58,7 +59,6 @@ class python_ws_client(object):
         for single_key in tempory_client_dict:
             Server_dict = {
                 'server id': self.server_id_dict[single_key],
-                'recent danmaku': "测试",
                 'overhead': tempory_client_dict[single_key]
             }
             self.global_lock.acquire()

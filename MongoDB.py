@@ -368,19 +368,27 @@ class MongoDB(object):
 	def get_updated_server_info(self):
 		return list(self.serverdb.find({}))
 
-	def update_server_db_according_to_server_dict(self, serverdict):
+	def clean_up_serverdb(self):
 		self.serverdb.drop()
+
+	def increment_danmaku_counter_of_server(self, server_id):
+		print(f"server_id: {server_id}")
+		self.serverdb.find_one_and_update({'_id': server_id}, {'$inc':
+			                                                     {'recent danmaku': 1}
+		                                                     }, new=True)
+
+	def update_server_db_according_to_server_dict(self, serverdict):
+		# self.serverdb.drop()
 		server_id = serverdict['server id']
 		row = self.serverdb.find_one({'_id': server_id})
 		if row is None:
 			'cannot find this server, this should only happens at the beginning'
 			self.serverdb.insert_one({'_id': server_id,
-			                          'recent danmaku': serverdict['recent danmaku'],
+			                          'recent danmaku': 0,
 			                          'overhead': serverdict['overhead']
 			                          })
 		else:
-			self.serverdb.update({'_id': server_id}, {'$set':{'recent danmaku': serverdict['recent danmaku'],
-			                                                         'overhead': serverdict['overhead']}})
+			self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead']}})
 		# 	print(info)
 		# test = list(self.serverdb.find({'_id': server_id}))
 		# pprint.pprint(test)

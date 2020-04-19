@@ -8,5 +8,6 @@ scp python_ws_client.py root@47.240.116.247:/root/DD_real_time_radar
 scp Fast_naive_bayes.py root@47.240.116.247:/root/DD_real_time_radar
 
 scp Client_Scheduling.py root@47.240.116.247:/root/DD_real_time_radar
+scp Socket_setting.py root@47.240.116.247:/root/DD_real_time_radar
 
 # Vtuber-danmaku
