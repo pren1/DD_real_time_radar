@@ -52,7 +52,7 @@ class python_ws_client(object):
 
     def Schedual_roomid_to_clients(self):
         self.secheduler.renew_client_tasks_using_new_roomid_list(self.open_room_list)
-        print(self.secheduler.tempory_client_dict)
+        # print(self.secheduler.tempory_client_dict)
         'Then, we could write into the database'
         for single_key in self.secheduler.tempory_client_dict:
             Server_dict = {

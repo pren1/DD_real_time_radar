@@ -365,7 +365,11 @@ class MongoDB(object):
 		process_rate = intp_process_cnt / danmaku_count
 		return process_rate > 0.1
 
+	def get_updated_server_info(self):
+		return list(self.serverdb.find({}))
+
 	def update_server_db_according_to_server_dict(self, serverdict):
+		self.serverdb.drop()
 		server_id = serverdict['server id']
 		row = self.serverdb.find_one({'_id': server_id})
 		if row is None:
@@ -765,7 +769,7 @@ if __name__ == '__main__':
 	}
 
 	Server_dict = {
-		'server id': '2',
+		'server id': 1,
 		'recent danmaku': "测试2",
 		'overhead': 9
 	}
