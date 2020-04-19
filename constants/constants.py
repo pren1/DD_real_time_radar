@@ -64,4 +64,4 @@ unique ID & nickname of live room
 
 RANKING = "rank_top300"
 
-WORKING_THRESHOLD = 5
+WORKING_THRESHOLD = 10
