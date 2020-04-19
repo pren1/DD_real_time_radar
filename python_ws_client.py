@@ -13,8 +13,11 @@ class python_ws_client(object):
         'Connect to dataset, connect to js server via ws'
         self.mongo_db = MongoDB(update_rank_list=False)
         self.NB_classifier = Naive_Bayes()
+        self.global_lock=threading.Lock()
+
         self.open_room_list = []
-        self.ip_list = ['localhost', '18.223.43.172']
+        self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
+        # self.ip_list = ['localhost']
         self.socket_list = self.build_socket_dict_list_with_clients(self.ip_list)
         'Test the running time of target func'
         start_time = time.time()
@@ -30,7 +33,7 @@ class python_ws_client(object):
         for single_ip in ip_list:
             res.append({
                 'ip': single_ip,
-                'socket': Socket_setting(self.mongo_db, self.NB_classifier, ip_address=single_ip, port=9003)
+                'socket': Socket_setting(self.mongo_db, self.NB_classifier, global_lock = self.global_lock, ip_address=single_ip, port=9003)
             })
         return res
 
@@ -65,6 +68,6 @@ class python_ws_client(object):
 
 if __name__ == '__main__':
     ws_listenser = python_ws_client()
-    ws_listenser.begin_update_data_periodically()
+    # ws_listenser.begin_update_data_periodically()
     # ws_listenser.obtain_open_room_list_periodically()
     # ws_listenser.build_socket_with_clients()
