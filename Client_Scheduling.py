@@ -12,7 +12,6 @@ class Client_Secheduler(object):
 		if len(self.room_id_list) == 0:
 			print("Room id list empty, no one is on live. Are you sure?")
 		self.client_task_dict = {}
-		self.tempory_client_dict = {}
 		self.build_initial_client_tasks()
 
 	def build_initial_client_tasks(self):
@@ -74,11 +73,16 @@ class Client_Secheduler(object):
 			self.client_task_dict[suitable_ip]['roomid_list'].append(roomid)
 			self.client_task_dict[suitable_ip]['socket'].watch_room(roomid)
 
+	def find_client_dict(self):
+		tempory_client_dict = {}
+		for ip in self.client_task_dict:
+			tempory_client_dict[ip] = len(self.client_task_dict[ip]['roomid_list'])
+		return tempory_client_dict
+
 	def find_suitable_client_ip(self):
 		tempory_client_dict = {}
 		for ip in self.client_task_dict:
 			tempory_client_dict[ip] = len(self.client_task_dict[ip]['roomid_list'])
-		self.tempory_client_dict = tempory_client_dict
 		'Get ip with minimum overhead'
 		target_ip = min(tempory_client_dict, key = tempory_client_dict.get)
 		if tempory_client_dict[target_ip] >= self.each_client_capacity:

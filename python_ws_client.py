@@ -52,17 +52,19 @@ class python_ws_client(object):
 
     def Schedual_roomid_to_clients(self):
         self.secheduler.renew_client_tasks_using_new_roomid_list(self.open_room_list)
-        # print(self.secheduler.tempory_client_dict)
+        tempory_client_dict = self.secheduler.find_client_dict()
+        # print(tempory_client_dict)
         'Then, we could write into the database'
-        for single_key in self.secheduler.tempory_client_dict:
+        for single_key in tempory_client_dict:
             Server_dict = {
                 'server id': self.server_id_dict[single_key],
                 'recent danmaku': "测试",
-                'overhead': self.secheduler.tempory_client_dict[single_key]
+                'overhead': tempory_client_dict[single_key]
             }
             self.global_lock.acquire()
             self.mongo_db.update_server_db_according_to_server_dict(Server_dict)
             self.global_lock.release()
+        # print(self.mongo_db.get_updated_server_info())
 
     def begin_update_data_periodically(self):
         timerThread = threading.Thread(target=self.timer_func)
