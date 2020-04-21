@@ -1,6 +1,6 @@
 var express = require('express');
 const io = require('socket.io-client')
-const socket = io('https://api.vtbs.moe')
+const socket = io('https://api.vtbs.moe', { autoConnect: false })
 
 const IO_Server = require('socket.io')
 // const dispatch = new Server(9003, { serveClient: false })
@@ -26,19 +26,35 @@ io_.on("connection", function(socket) {
   })
 })
 
-const { LiveWS } = require('bilibili-live-ws')
-const no = require('./env')
-
+// const { LiveWS } = require('bilibili-live-ws')
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+const got = require('got')
+const { KeepLiveWS } = require('bilibili-live-ws')
+const no = require('./env')
+
 const rooms = new Set()
+
+let address
+let key
+
+const refreshWssUrls = async () => {
+  const { data: { host_server_list: [{ host }], token } } = await got('https://api.live.bilibili.com/room/v1/Danmu/getConf').json().catch(() => ({ data: {} }))
+  if (host && token) {
+    address = `wss://${host}/sub`
+    key = token
+  }
+}
+
+setInterval(refreshWssUrls, 1000 * 60 * 10)
 
 //const reg = /【(.*)】|【(.*)|(.*)】/;
 const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
 const openRoom = ({ roomid, mid }) => new Promise(resolve => {
   console.log(`OPEN: ${roomid}`)
-  const live = new LiveWS(roomid)
+  // const live = new LiveWS(roomid)
+  const live = new KeepLiveWS(roomid, { address, key })
   const autorestart = setTimeout(() => {
     console.log(`AUTORESTART: ${roomid}`)
     live.close()
@@ -76,7 +92,8 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
   live.on('close', () => {
     clearTimeout(autorestart)
     clearTimeout(timeout)
-    resolve({ roomid })
+    live.params[1] = { key, address }
+    // resolve({ roomid })
   })
   live.on('error', () => {
     console.log(`ERROR: ${roomid}`)
@@ -103,3 +120,6 @@ socket.on('info', async info => {
     .forEach(({ roomid, mid }) => watch({ roomid, mid }))
   console.log('REFRESH')
 })
+
+const start = () => refreshWssUrls().then(socket.open()).catch(start)
+start()
