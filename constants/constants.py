@@ -4,6 +4,8 @@ MONGODB_LOCAL = "mongodb://localhost:27017/"
 
 DATABASE_NAME = "danmaku_db"
 
+SERVER_INFO_NAME = "server_db"
+
 DANMAKU_THRESHORD = 150
 
 ROOM_DANMAKU_THRESHOLD = 10
@@ -64,4 +66,4 @@ unique ID & nickname of live room
 
 RANKING = "rank_top300"
 
-WORKING_THRESHOLD = 5
+WORKING_THRESHOLD = 10
