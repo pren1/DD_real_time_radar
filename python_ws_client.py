@@ -1,89 +1,39 @@
-from Socket_setting import Socket_setting
+import socketio
 from MongoDB import MongoDB
 from Fast_naive_bayes import Naive_Bayes
-import requests
-from flask import jsonify
-import pdb
-import pprint
-import datetime, threading, time
-from Client_Scheduling import Client_Secheduler
+# from leader_board_drawer import leader_board_drawer
 
 class python_ws_client(object):
     def __init__(self):
         'Connect to dataset, connect to js server via ws'
-        self.mongo_db = MongoDB(update_rank_list=False)
-        self.mongo_db.clean_up_serverdb()
+        self.mongo_db = MongoDB(update_rank_list=True)
+        self.leader_board_index = 0
+        self.sio = socketio.Client()
+        self.sio.on('connect', self.socket_connected)
+        self.sio.on('message', self.message_received)
+        self.sio.connect('http://localhost:9003')
         self.NB_classifier = Naive_Bayes()
-        self.global_lock=threading.Lock()
+        # self.leader_board = leader_board_drawer(self.mongo_db)
 
-        self.open_room_list = []
-        self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
-        # self.ip_list = ['localhost']
-        self.server_id_dict = {}
-        for index, ip in enumerate(self.ip_list):
-            self.server_id_dict[ip] = index + 1
-        self.socket_list = self.build_socket_dict_list_with_clients(self.ip_list)
-        'Test the running time of target func'
-        start_time = time.time()
-        self.open_room_list = self.obtain_open_room_list_periodically()
-        self.secheduler = Client_Secheduler(self.socket_list, self.open_room_list)
-        self.period_seconds = int(time.time() - start_time) * 5
-        self.Schedual_roomid_to_clients()
-        # print("--- %s seconds ---" % (self.period_seconds))
+    def socket_connected(self):
+        print("Connected with js server")
+        print(self.sio.eio.sid)
 
-    def build_socket_dict_list_with_clients(self, ip_list):
-        'Build sockets'
-        res = []
-        for single_ip in ip_list:
-            res.append({
-                'ip': single_ip,
-                'socket': Socket_setting(self.mongo_db, self.NB_classifier, global_lock = self.global_lock, ip_address=single_ip, server_id = self.server_id_dict[single_ip], port=9003)
-            })
-        return res
+    def message_received(self, message):
+        'on received danmakus'
+        is_interpretation, log_meg = self.NB_classifier.decide_class(message['message'])
+        print(f"{log_meg}")
+        if is_interpretation:
+            self.mongo_db.update_everything_according_to_a_new_message(message)
+        # self.leader_board_index += 1
+        # if self.leader_board_index % 10 == 0 and self.leader_board_index >= 10:
+        #     'Draw leader board'
+        #     self.leader_board.process_leader_board(k_largest=10)
 
-    def obtain_open_room_list_periodically(self):
-        'Only concentrate on open room'
-        contents = requests.get('https://api.vtbs.moe/v1/info').json()
-        result = []
-        for single in contents:
-            if single['liveStatus'] == 1:
-                result.append(single['roomid'])
-        # pprint.pprint(result)
-        return result
-
-    def Schedual_roomid_to_clients(self):
-        self.secheduler.renew_client_tasks_using_new_roomid_list(self.open_room_list)
-        tempory_client_dict = self.secheduler.find_client_dict()
-        # print(tempory_client_dict)
-        'Then, we could write into the database'
-        for single_key in tempory_client_dict:
-            Server_dict = {
-                'server id': self.server_id_dict[single_key],
-                'overhead': tempory_client_dict[single_key]
-            }
-            self.global_lock.acquire()
-            self.mongo_db.update_server_db_according_to_server_dict(Server_dict)
-            self.global_lock.release()
-        # print(self.mongo_db.get_updated_server_info())
-
-    def begin_update_data_periodically(self):
-        timerThread = threading.Thread(target=self.timer_func)
-        timerThread.start()
-
-    def timer_func(self):
-        next_call = time.time()
-        while True:
-            print(f"update room list at: {datetime.datetime.now()}")
-            start_time = time.time()
-            self.open_room_list = self.obtain_open_room_list_periodically()
-            self.Schedual_roomid_to_clients()
-            self.period_seconds = int(time.time() - start_time) * 5
-            print("--- %s seconds ---" % (self.period_seconds))
-            next_call = next_call + self.period_seconds
-            time.sleep(max(next_call - time.time(), 2))
+    def send_message(self):
+        self.sio.emit("something", "Hello from python.")
+        self.sio.send("hello")
 
 if __name__ == '__main__':
     ws_listenser = python_ws_client()
-    ws_listenser.begin_update_data_periodically()
-    # ws_listenser.obtain_open_room_list_periodically()
-    # ws_listenser.build_socket_with_clients()
+    # ws_listenser.send_message()
