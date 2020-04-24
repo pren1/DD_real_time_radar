@@ -38,6 +38,13 @@ const rooms = new Set()
 let address
 let key
 
+const opened = new Set()
+const lived = new Set()
+const printStatus = () => {
+  // 如果不要打印连接状况就注释掉下一行
+  console.log(`living/opening: ${lived.size}/${opened.size}`)
+}
+
 const refreshWssUrls = async () => {
   const { data: { host_server_list: [{ host }], token } } = await got('https://api.live.bilibili.com/room/v1/Danmu/getConf').json().catch(() => ({ data: {} }))
   if (host && token) {
@@ -52,14 +59,24 @@ setInterval(refreshWssUrls, 1000 * 60 * 10)
 const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
 const openRoom = ({ roomid, mid }) => {
+  opened.add(roomid)
   console.log(`OPEN: ${roomid}`)
+  printStatus()
   const live = new KeepLiveWS(roomid, { address, key })
-  live.on('live', () => console.log(`LIVE: ${roomid}`))
+  live.on('live', () => {
+    lived.add(roomid)
+    console.log(`LIVE: ${roomid}`)
+    printStatus()
+  })
   live.on('error', () => {
+    lived.delete(roomid)
     console.log(`ERROR: ${roomid}`)
+    printStatus()
   })
   live.on('close', () => {
+    lived.delete(roomid)
     console.log(`CLOSE: ${roomid}`)
+    printStatus()
     live.params[1] = { key, address }
   })
 
