@@ -94,7 +94,7 @@ const openRoom = ({ roomid, mid }) => {
         message_length = message.replace(/[【】(（"“‘)）"”’]/g, "").length
         io_.send({ message, message_length, roomid, mid, uname, timestamp})
       }
-      const listen_length = rooms.size
+      const listen_length = `living/opening: ${lived.size}/${opened.size}`
       console.log({ message, roomid, mid, uname, timestamp, listen_length})
     }
   })
