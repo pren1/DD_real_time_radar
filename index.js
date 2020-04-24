@@ -51,19 +51,18 @@ setInterval(refreshWssUrls, 1000 * 60 * 10)
 //const reg = /【(.*)】|【(.*)|(.*)】/;
 const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
-const openRoom = ({ roomid, mid }) => new Promise(resolve => {
+const openRoom = ({ roomid, mid }) => {
   console.log(`OPEN: ${roomid}`)
-  // const live = new LiveWS(roomid)
   const live = new KeepLiveWS(roomid, { address, key })
-  const autorestart = setTimeout(() => {
-    console.log(`AUTORESTART: ${roomid}`)
-    live.close()
-  }, 1000 * 60 * 60 * 18)
-  let timeout = setTimeout(() => {
-    console.log(`TIMEOUT: ${roomid}`)
-    live.close()
-  }, 1000 * 45)
-  live.once('live', () => console.log(`LIVE: ${roomid}`))
+  live.on('live', () => console.log(`LIVE: ${roomid}`))
+  live.on('error', () => {
+    console.log(`ERROR: ${roomid}`)
+  })
+  live.on('close', () => {
+    console.log(`CLOSE: ${roomid}`)
+    live.params[1] = { key, address }
+  })
+
   live.on('DANMU_MSG', async ({ info }) => {
     if (!info[0][9]) {
       var message = info[1]
@@ -82,35 +81,13 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
       console.log({ message, roomid, mid, uname, timestamp, listen_length})
     }
   })
+}
 
-  live.on('heartbeat', () => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => {
-      console.log(`TIMEOUT: ${roomid}`)
-      live.close()
-    }, 1000 * 45)
-  })
-  live.on('close', () => {
-    clearTimeout(autorestart)
-    clearTimeout(timeout)
-    live.params[1] = { key, address }
-    // resolve({ roomid })
-  })
-  live.on('error', () => {
-    console.log(`ERROR: ${roomid}`)
-  })
-})
-
-const watch = async ({ roomid, mid }) => {
+const watch = ({ roomid, mid }) => {
   if (!rooms.has(roomid)) {
     rooms.add(roomid)
     console.log(`WATCH: ${roomid}`)
-    while (true) {
-      await openRoom({ roomid, mid })
-      console.log(`CLOSE: ${roomid}`)
-      await wait(50)
-      console.log(`REOPEN: ${roomid}`)
-    }
+    openRoom({ roomid, mid })
   }
 }
 
