@@ -38,6 +38,13 @@ const rooms = new Set()
 let address
 let key
 
+const opened = new Set()
+const lived = new Set()
+const printStatus = () => {
+  // 如果不要打印连接状况就注释掉下一行
+  console.log(`living/opening: ${lived.size}/${opened.size}`)
+}
+
 const refreshWssUrls = async () => {
   const { data: { host_server_list: [{ host }], token } } = await got('https://api.live.bilibili.com/room/v1/Danmu/getConf').json().catch(() => ({ data: {} }))
   if (host && token) {
@@ -51,19 +58,28 @@ setInterval(refreshWssUrls, 1000 * 60 * 10)
 //const reg = /【(.*)】|【(.*)|(.*)】/;
 const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
-const openRoom = ({ roomid, mid }) => new Promise(resolve => {
+const openRoom = ({ roomid, mid }) => {
+  opened.add(roomid)
   console.log(`OPEN: ${roomid}`)
-  // const live = new LiveWS(roomid)
+  printStatus()
   const live = new KeepLiveWS(roomid, { address, key })
-  const autorestart = setTimeout(() => {
-    console.log(`AUTORESTART: ${roomid}`)
-    live.close()
-  }, 1000 * 60 * 60 * 18)
-  let timeout = setTimeout(() => {
-    console.log(`TIMEOUT: ${roomid}`)
-    live.close()
-  }, 1000 * 45)
-  live.once('live', () => console.log(`LIVE: ${roomid}`))
+  live.on('live', () => {
+    lived.add(roomid)
+    console.log(`LIVE: ${roomid}`)
+    printStatus()
+  })
+  live.on('error', () => {
+    lived.delete(roomid)
+    console.log(`ERROR: ${roomid}`)
+    printStatus()
+  })
+  live.on('close', () => {
+    lived.delete(roomid)
+    console.log(`CLOSE: ${roomid}`)
+    printStatus()
+    live.params[1] = { key, address }
+  })
+
   live.on('DANMU_MSG', async ({ info }) => {
     if (!info[0][9]) {
       var message = info[1]
@@ -82,35 +98,13 @@ const openRoom = ({ roomid, mid }) => new Promise(resolve => {
       console.log({ message, roomid, mid, uname, timestamp, listen_length})
     }
   })
+}
 
-  live.on('heartbeat', () => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => {
-      console.log(`TIMEOUT: ${roomid}`)
-      live.close()
-    }, 1000 * 45)
-  })
-  live.on('close', () => {
-    clearTimeout(autorestart)
-    clearTimeout(timeout)
-    live.params[1] = { key, address }
-    // resolve({ roomid })
-  })
-  live.on('error', () => {
-    console.log(`ERROR: ${roomid}`)
-  })
-})
-
-const watch = async ({ roomid, mid }) => {
+const watch = ({ roomid, mid }) => {
   if (!rooms.has(roomid)) {
     rooms.add(roomid)
     console.log(`WATCH: ${roomid}`)
-    while (true) {
-      await openRoom({ roomid, mid })
-      console.log(`CLOSE: ${roomid}`)
-      await wait(50)
-      console.log(`REOPEN: ${roomid}`)
-    }
+    openRoom({ roomid, mid })
   }
 }
 
