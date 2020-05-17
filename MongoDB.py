@@ -529,7 +529,7 @@ class MongoDB(object):
 
 		'1. 弹幕数： 破坏力'
 		rank_length = len(list(self.ranking.find()))
-		power = ((rank_length - self.obtain_current_rank(mid) + 1)/rank_length) ** 3
+		power = ((rank_length - self.obtain_current_rank(mid) + 1 + 3)/rank_length) ** 3
 
 		'2. 最长高强度同传时间：持续力'
 		durability = build_max_length(self, mid)

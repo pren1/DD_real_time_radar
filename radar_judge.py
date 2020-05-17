@@ -29,7 +29,7 @@ def build_max_length(db, mid):
 			}
 		]))
 
-	threshold = 1000 * 60 * 5 # 5 minutes
+	threshold = 1000 * 60 * 10 # 5 minutes
 	last_time, now_time, start_time = 0, 0, 0
 	max_time, max_start_time = 0, 0
 	now_room, max_room = 0, 0
