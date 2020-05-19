@@ -1,6 +1,6 @@
 var express = require('express');
 const io = require('socket.io-client')
-const socket = io('https://api.vtbs.moe', { autoConnect: false })
+const socket = io('https://api.vtbs.moe')
 
 const IO_Server = require('socket.io')
 // const dispatch = new Server(9003, { serveClient: false })
@@ -35,8 +35,10 @@ const no = require('./env')
 
 const rooms = new Set()
 
-let address
-let key
+// let address
+// let key
+
+const waiting = []
 
 const opened = new Set()
 const lived = new Set()
@@ -45,20 +47,49 @@ const printStatus = () => {
   console.log(`living/opening: ${lived.size}/${opened.size}`)
 }
 
-const refreshWssUrls = async () => {
-  const { data: { host_server_list: [{ host }], token } } = await got('https://api.live.bilibili.com/room/v1/Danmu/getConf').json().catch(() => ({ data: {} }))
-  if (host && token) {
-    address = `wss://${host}/sub`
-    key = token
-  }
-}
+// const refreshWssUrls = async () => {
+//   const { data: { host_server_list: [{ host }], token } } = await got('https://api.live.bilibili.com/room/v1/Danmu/getConf').json().catch(() => ({ data: {} }))
+//   if (host && token) {
+//     address = `wss://${host}/sub`
+//     key = token
+//   }
+// }
 
-setInterval(refreshWssUrls, 1000 * 60 * 10)
+const processWaiting = async () => {
+   console.log('processWaiting')
+   while (waiting.length) {
+     await wait(500)
+     const { url, resolve } = waiting.shift()
+     got(url).json().then(resolve).catch(() => {
+       console.error('redo', url)
+       waiting.push({ url, resolve })
+       if (waiting.length === 1) {
+         processWaiting()
+       }
+     })
+   }
+ }
+
+// setInterval(refreshWssUrls, 1000 * 60 * 10)
+
+const getConf = roomid => {
+   const p = new Promise(resolve => {
+     waiting.push({ resolve, url: `https://api.live.bilibili.com/room/v1/Danmu/getConf?room_id=${roomid}` })
+   })
+   if (waiting.length === 1) {
+     processWaiting()
+   }
+   return p.then(({ data: { host_server_list: [{ host }], token } }) => {
+     return { address: `wss://${host}/sub`, key: token }
+   })
+ }
 
 //const reg = /【(.*)】|【(.*)|(.*)】/;
 const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
-const openRoom = ({ roomid, mid }) => {
+// const openRoom = ({ roomid, mid }) => {
+const openRoom = async ({ roomid, mid }) => {
+  const { address, key } = await getConf(roomid)
   opened.add(roomid)
   console.log(`OPEN: ${roomid}`)
   printStatus()
@@ -73,7 +104,8 @@ const openRoom = ({ roomid, mid }) => {
     console.log(`ERROR: ${roomid}`)
     printStatus()
   })
-  live.on('close', () => {
+  live.on('close', async () => {
+    const { address, key } = await getConf(roomid)
     lived.delete(roomid)
     console.log(`CLOSE: ${roomid}`)
     printStatus()
@@ -116,5 +148,5 @@ socket.on('info', async info => {
   console.log('REFRESH')
 })
 
-const start = () => refreshWssUrls().then(socket.open()).catch(start)
-start()
+// const start = () => refreshWssUrls().then(socket.open()).catch(start)
+// start()
