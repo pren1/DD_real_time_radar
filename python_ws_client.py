@@ -6,7 +6,7 @@ from Fast_naive_bayes import Naive_Bayes
 class python_ws_client(object):
     def __init__(self):
         'Connect to dataset, connect to js server via ws'
-        self.mongo_db = MongoDB(update_rank_list=True)
+        self.mongo_db = MongoDB(update_rank_list=False)
         self.leader_board_index = 0
         self.sio = socketio.Client()
         self.sio.on('connect', self.socket_connected)

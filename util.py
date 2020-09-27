@@ -30,9 +30,9 @@ def get_sign_and_face_of_mid(mid):
 	res = requests.get(url)
 	face = 'https' + res.json()['data']['face'][4:]
 	sign = res.json()['data']['sign']
-	time.sleep(1.0)
+	time.sleep(5.0)
 	while len(face) == 0:
-		time.sleep(1.0)
+		time.sleep(5.0)
 		print("Asking bilibili...just wait")
 		face = 'https' + res.json()['data']['face'][4:]
 		sign = res.json()['data']['sign']
@@ -106,5 +106,5 @@ def range_value(dd_range):
 	return dd_range**.5 / 5 #新算法下不是每个直播间发一条同传就算dd了，所以这里的属性值会给的大方一点
 
 if __name__ == '__main__':
-	face, sign = get_sign_and_face_of_mid(74928521)
+	face, sign = get_sign_and_face_of_mid(1395983)
 	pdb.set_trace()
