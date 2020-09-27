@@ -30,9 +30,9 @@ def get_sign_and_face_of_mid(mid):
 	res = requests.get(url)
 	face = 'https' + res.json()['data']['face'][4:]
 	sign = res.json()['data']['sign']
-	time.sleep(5.0)
+	time.sleep(7.5)
 	while len(face) == 0:
-		time.sleep(5.0)
+		time.sleep(7.5)
 		print("Asking bilibili...just wait")
 		face = 'https' + res.json()['data']['face'][4:]
 		sign = res.json()['data']['sign']
