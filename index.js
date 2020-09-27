@@ -58,7 +58,7 @@ const printStatus = () => {
 const processWaiting = async () => {
    console.log('processWaiting')
    while (waiting.length) {
-     await wait(500)
+     await wait(1500)
      const { url, resolve } = waiting.shift()
      got(url).json().then(resolve).catch(() => {
        console.error('redo', url)
@@ -121,10 +121,15 @@ const openRoom = async ({ roomid, mid }) => {
       let matchres = message.match(reg);
       // Only send matches message to python client
       if (matchres && matchres.length > 0){
-        // remove all 【】from message
-        // message = message.replace(/[【】(（"“‘)）"”’]/g, "")
-        message_length = message.replace(/[【】(（"“‘)）"”’]/g, "").length
-        io_.send({ message, message_length, roomid, mid, uname, timestamp})
+
+        if ([21752686, 8982686].includes(roomid)){
+          console.log("room has been banned!")
+        }
+        else{
+          message_length = message.replace(/[【】(（"“‘)）"”’]/g, "").length
+          io_.send({ message, message_length, roomid, mid, uname, timestamp})
+        }
+
       }
       const listen_length = `living/opening: ${lived.size}/${opened.size}`
       console.log({ message, roomid, mid, uname, timestamp, listen_length})
