@@ -28,11 +28,17 @@ def get_nickname_of_mid(mid):
 def get_sign_and_face_of_mid(mid):
 	url = 'https://api.bilibili.com/x/space/acc/info?mid=' + str(mid)
 	res = requests.get(url)
+	if res.json()['code'] == -404:
+		'we can use...mine :P to make this more stable..'
+		url = 'https://api.bilibili.com/x/space/acc/info?mid=' + str(1395983)
+		res = requests.get(url)
+		assert res.json()['code'] == 0
+
 	face = 'https' + res.json()['data']['face'][4:]
 	sign = res.json()['data']['sign']
-	time.sleep(7.5)
+	time.sleep(5)
 	while len(face) == 0:
-		time.sleep(7.5)
+		time.sleep(5)
 		print("Asking bilibili...just wait")
 		face = 'https' + res.json()['data']['face'][4:]
 		sign = res.json()['data']['sign']
