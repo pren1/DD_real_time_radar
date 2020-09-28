@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-scp MongoDB.py root@47.240.116.247:/root/DD_real_time_radar
+scp MongoDB.py root@8.210.51.250:/root/DD_real_time_radar
 scp util.py root@8.210.51.250:/root/DD_real_time_radar
 scp Interface.py root@8.210.51.250:/root/DD_real_time_radar
 scp update_data.py root@47.240.116.247:/root/DD_real_time_radar

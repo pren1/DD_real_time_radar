@@ -115,7 +115,8 @@ class MongoDB(object):
 		print("deleted previous ranking list")
 		'get the list from dataset for one time. Later, we will update it when necessary...'
 		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_len_count", -1)
-		for single_rank in tqdm(rank_list_curosr):
+		resulted_curosr_list = [x for x in rank_list_curosr]
+		for single_rank in tqdm(resulted_curosr_list):
 			face, sign = get_sign_and_face_of_mid(single_rank['_id'])
 			single_rank['face'] = face
 			single_rank['sign'] = sign
