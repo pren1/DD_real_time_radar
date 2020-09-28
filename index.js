@@ -97,7 +97,6 @@ const openRoom = async ({ roomid, mid }) => {
   console.log(`OPEN: ${roomid}`)
   printStatus()
   const live = new KeepLiveWS(roomid, { address, key })
-  console.log(`room info: ${live.closed}`)
   live.on('live', () => {
     lived.add(roomid)
     console.log(`LIVE: ${roomid}`)
@@ -150,7 +149,7 @@ const watch = ({ roomid, mid }) => {
 }
 
 socket.on('info', async info => {
-  await wait(1000)
+  // await wait(1000)
   info
     .filter(({ roomid }) => roomid)
     .filter(({ roomid }) => !no.includes(roomid))
