@@ -48,7 +48,7 @@ class python_ws_client(object):
         for single in contents:
             if single['liveStatus'] == 1:
                 result.append(single['roomid'])
-        # pprint.pprint(result)
+        pprint.pprint(f"overhead: {len(result)}")
         return result
 
     def Schedual_roomid_to_clients(self):
@@ -73,12 +73,12 @@ class python_ws_client(object):
     def timer_func(self):
         next_call = time.time()
         while True:
-            print(f"update room list at: {datetime.datetime.now()}")
+            # print(f"update room list at: {datetime.datetime.now()}")
             start_time = time.time()
             self.open_room_list = self.obtain_open_room_list_periodically()
             self.Schedual_roomid_to_clients()
             self.period_seconds = int(time.time() - start_time) * 5
-            print("--- %s seconds ---" % (self.period_seconds))
+            # print("--- %s seconds ---" % (self.period_seconds))
             next_call = next_call + self.period_seconds
             time.sleep(max(next_call - time.time(), 2))
 

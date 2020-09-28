@@ -6,7 +6,7 @@ class Client_Secheduler(object):
 	def __init__(self, socket_dict_list, initial_room_id_list):
 		self.socket_dict_list = socket_dict_list
 		self.max_available_clients = len(socket_dict_list)
-		self.each_client_capacity = 17
+		self.each_client_capacity = 64
 		'extra room gets truncated'
 		self.room_id_list = initial_room_id_list[:self.each_client_capacity * self.max_available_clients]
 		if len(self.room_id_list) == 0:
