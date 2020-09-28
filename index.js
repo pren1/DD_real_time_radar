@@ -58,7 +58,7 @@ const printStatus = () => {
 const processWaiting = async () => {
    console.log('processWaiting')
    while (waiting.length) {
-     await wait(500)
+     await wait(1000)
      const { url, resolve } = waiting.shift()
      got(url).json().then(resolve).catch(() => {
        console.error('redo', url)
@@ -89,6 +89,7 @@ const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
 // const openRoom = ({ roomid, mid }) => {
 const openRoom = async ({ roomid, mid }) => {
+  await wait(1000)
   const { address, key } = await getConf(roomid)
   opened.add(roomid)
   console.log(`OPEN: ${roomid}`)
@@ -146,6 +147,7 @@ const watch = ({ roomid, mid }) => {
 }
 
 socket.on('info', async info => {
+  await wait(1000)
   info
     .filter(({ roomid }) => roomid)
     .filter(({ roomid }) => !no.includes(roomid))
