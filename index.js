@@ -31,6 +31,7 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const got = require('got')
 const { KeepLiveWS } = require('bilibili-live-ws')
+const { getConf: getConfW } = require('bilibili-live-ws/extra')
 const no = require('./env')
 
 const rooms = new Set()
@@ -56,45 +57,47 @@ const printStatus = () => {
 // }
 
 const processWaiting = async () => {
-   console.log('processWaiting')
-   while (waiting.length) {
-     await wait(1000)
-     const { url, resolve } = waiting.shift()
-     got(url).json().then(resolve).catch(() => {
-       console.error('redo', url)
-       waiting.push({ url, resolve })
-       if (waiting.length === 1) {
-         processWaiting()
-       }
-     })
-   }
- }
+  console.log('processWaiting')
+  while (waiting.length) {
+    while (opened.size - lived.size > 8) {
+      await wait(1000)
+    }
+    await wait(1800)
+    const { f, resolve, roomid } = waiting.shift()
+    f().then(resolve).catch(() => {
+      console.error('redo', roomid)
+      waiting.push({ f, resolve, roomid })
+      if (waiting.length === 1) {
+        processWaiting()
+      }
+    })
+  }
+}
 
 // setInterval(refreshWssUrls, 1000 * 60 * 10)
 
 const getConf = roomid => {
-   const p = new Promise(resolve => {
-     waiting.push({ resolve, url: `https://api.live.bilibili.com/room/v1/Danmu/getConf?room_id=${roomid}` })
-   })
-   if (waiting.length === 1) {
-     processWaiting()
-   }
-   return p.then(({ data: { host_server_list: [{ host }], token } }) => {
-     return { address: `wss://${host}/sub`, key: token }
-   })
- }
+  const p = new Promise(resolve => {
+    waiting.push({ resolve, f: () => getConfW(roomid), roomid })
+  })
+  if (waiting.length === 1) {
+    processWaiting()
+  }
+  return p
+}
 
 //const reg = /【(.*)】|【(.*)|(.*)】/;
 const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
 // const openRoom = ({ roomid, mid }) => {
 const openRoom = async ({ roomid, mid }) => {
-  await wait(1000)
+  // await wait(1000)
   const { address, key } = await getConf(roomid)
   opened.add(roomid)
   console.log(`OPEN: ${roomid}`)
   printStatus()
   const live = new KeepLiveWS(roomid, { address, key })
+  console.log(`room info: ${live.closed}`)
   live.on('live', () => {
     lived.add(roomid)
     console.log(`LIVE: ${roomid}`)
@@ -154,6 +157,3 @@ socket.on('info', async info => {
     .forEach(({ roomid, mid }) => watch({ roomid, mid }))
   console.log('REFRESH')
 })
-
-// const start = () => refreshWssUrls().then(socket.open()).catch(start)
-// start()
