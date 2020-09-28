@@ -113,6 +113,7 @@ class MongoDB(object):
 		print("Updating original rank list...")
 		self.ranking.drop()
 		print("deleted previous ranking list")
+		print("utilizng cursor solver")
 		'get the list from dataset for one time. Later, we will update it when necessary...'
 		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_len_count", -1)
 		resulted_curosr_list = [x for x in rank_list_curosr]

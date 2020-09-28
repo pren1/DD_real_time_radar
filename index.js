@@ -89,7 +89,6 @@ const reg = /(.*)【(.*)|(.*)】(.*)|^[(（"“‘]|$[)）"”’]/;
 
 // const openRoom = ({ roomid, mid }) => {
 const openRoom = async ({ roomid, mid }) => {
-  await wait(500)
   const { address, key } = await getConf(roomid)
   opened.add(roomid)
   console.log(`OPEN: ${roomid}`)
