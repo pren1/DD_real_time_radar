@@ -13,6 +13,7 @@ from datetime import datetime
 import numpy as np
 from scipy.stats import entropy
 from radar_judge import *
+import csv
 
 class MongoDB(object):
 	def __init__(self, update_rank_list = False):
@@ -24,6 +25,7 @@ class MongoDB(object):
 		self.roomid_info = self.mydb[ROOMID_INFO]
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
+		self.serverdb = self.mydb[SERVER_INFO_NAME]
 		self.sorted_list = [] # Initialize the ranked top list
 		self.total_message_obtain = {}
 		if update_rank_list:
@@ -364,6 +366,35 @@ class MongoDB(object):
 			danmaku_count = 1
 		process_rate = intp_process_cnt / danmaku_count
 		return process_rate > 0.1
+
+	def get_updated_server_info(self):
+		return list(self.serverdb.find({}))
+
+	def clean_up_serverdb(self):
+		self.serverdb.drop()
+
+	def increment_danmaku_counter_of_server(self, server_id):
+		print(f"server_id: {server_id}")
+		self.serverdb.find_one_and_update({'_id': server_id}, {'$inc':
+			                                                     {'recent danmaku': 1}
+		                                                     }, new=True)
+
+	def update_server_db_according_to_server_dict(self, serverdict):
+		# self.serverdb.drop()
+		server_id = serverdict['server id']
+		row = self.serverdb.find_one({'_id': server_id})
+		if row is None:
+			'cannot find this server, this should only happens at the beginning'
+			self.serverdb.insert_one({'_id': server_id,
+			                          'recent danmaku': 0,
+			                          'overhead': serverdict['overhead']
+			                          })
+		else:
+			self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead']}})
+		# 	print(info)
+		# test = list(self.serverdb.find({'_id': server_id}))
+		# pprint.pprint(test)
+		# pdb.set_trace()
 
 	def update_mid_info_and_table_and_ranking(self, mydict):
 		'Up to date!'
@@ -728,13 +759,23 @@ class MongoDB(object):
 if __name__ == '__main__':
 	mydict = {
   'message_length': 99,
-  'roomid': 13946381,
+  'roomid': 1323381,
   'mid': 139232167,
   'uname': '蒼月夢aitoyume',
   'timestamp': 1583301485000,
    'message': "测试～"
 	}
+
+	Server_dict = {
+		'server id': 1,
+		'recent danmaku': "测试2",
+		'overhead': 9
+	}
+
 	db = MongoDB(update_rank_list=False)
+	db.update_server_db_according_to_server_dict(Server_dict)
+	pdb.set_trace()
+	# db.update_everything_according_to_a_new_message(mydict)
 	db.get_all_danmaku(351290)
 	db.build_basic_message_sets()
 	# db.update_message_sets(mydict)

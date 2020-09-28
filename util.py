@@ -45,32 +45,6 @@ def get_sign_and_face_of_mid(mid):
 	face = advance_face_link_director(face)
 	return face, sign
 
-	# try:
-	# 	face = 'https' + res.json()['data']['face'][4:]
-	# 	sign = res.json()['data']['sign']
-	# 	time.sleep(0.5)
-	# 	while len(face) == 0:
-	# 		time.sleep(0.5)
-	# 		print("Asking bilibili...just wait")
-	# 		face = 'https' + res.json()['data']['face'][4:]
-	# 		sign = res.json()['data']['sign']
-	# 	face = advance_face_link_director(face)
-	# 	return face, sign
-	# except:
-	# 	print("An exception occurred, face unavailable")
-	# 	fake_mid = 372312895
-	# 	url = 'https://api.bilibili.com/x/space/acc/info?mid=' + str(fake_mid)
-	# 	res = requests.get(url)
-	# 	sign = "For some reason, sign not available here..."
-	# 	time.sleep(0.5)
-	# 	while len(face) == 0:
-	# 		time.sleep(0.5)
-	# 		print("Asking bilibili...just wait")
-	# 		face = 'https' + res.json()['data']['face'][4:]
-	# 		sign = res.json()['data']['sign']
-	# 	face = advance_face_link_director(face)
-	# 	return face, sign
-
 def advance_face_link_director(face):
 	if face[-4:] == '.jpg':
 		return face + "_128x128.jpg"
