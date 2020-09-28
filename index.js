@@ -58,7 +58,7 @@ const printStatus = () => {
 const processWaiting = async () => {
    console.log('processWaiting')
    while (waiting.length) {
-     await wait(1000)
+     await wait(500)
      const { url, resolve } = waiting.shift()
      got(url).json().then(resolve).catch(() => {
        console.error('redo', url)
