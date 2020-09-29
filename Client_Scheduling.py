@@ -77,6 +77,7 @@ class Client_Secheduler(object):
 		'Before everything, let us find the most suitable client'
 		suitable_ip = self.find_suitable_client_ip()
 		if suitable_ip != 'overburden':
+			self.push_info_to_current_event(f'{self.room_info_dict[roomid]} 已上播', suitable_ip)
 			print(f"Assigning roomid: {roomid} to {suitable_ip}")
 			self.client_task_dict[suitable_ip]['roomid_list'].append(roomid)
 			self.client_task_dict[suitable_ip]['socket'].watch_room(roomid)
