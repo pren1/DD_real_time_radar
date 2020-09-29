@@ -1,11 +1,13 @@
 'Scheduling the roomid to each client server'
 import pdb
 import pprint
+from util import show_me_your_room_id
 
 class Client_Secheduler(object):
-	def __init__(self, socket_dict_list, initial_room_id_list):
+	def __init__(self, socket_dict_list, initial_room_id_list, room_info_dict):
 		self.socket_dict_list = socket_dict_list
 		self.max_available_clients = len(socket_dict_list)
+		self.room_info_dict = room_info_dict
 		self.each_client_capacity = 64
 		'extra room gets truncated'
 		self.room_id_list = initial_room_id_list[:self.each_client_capacity * self.max_available_clients]
@@ -13,6 +15,9 @@ class Client_Secheduler(object):
 			print("Room id list empty, no one is on live. Are you sure?")
 		self.client_task_dict = {}
 		self.build_initial_client_tasks()
+		self.current_event = {}
+		for single_ip in socket_dict_list:
+			self.current_event[single_ip['ip']] = []
 
 	def build_initial_client_tasks(self):
 		for index, single_room in enumerate(self.room_id_list):
@@ -31,6 +36,8 @@ class Client_Secheduler(object):
 		if new_list == self.room_id_list:
 			return
 		removed_list, added_list = self.get_difference_between_two_lists(old_list=self.room_id_list, new_list=new_list)
+		print(f"observe changes: Removed_list: {removed_list}")
+		print(f"observe changes, added_list: {added_list}")
 		'Remove roomid within removed_list'
 		for remove_room in removed_list:
 			self.Stop_monitoring_target_roomid(remove_room)
@@ -58,6 +65,7 @@ class Client_Secheduler(object):
 		for ip in self.client_task_dict:
 			if roomid in self.client_task_dict[ip]['roomid_list']:
 				'Find it, direct the client to remove it'
+				self.push_info_to_current_event(f'{self.room_info_dict[roomid]} 已下播', ip)
 				print(f"Removing roomid: {roomid} from {ip}")
 				'Do not forget to remove the roomid from corresponding dict'
 				self.client_task_dict[ip]['roomid_list'].remove(roomid)
@@ -73,11 +81,28 @@ class Client_Secheduler(object):
 			self.client_task_dict[suitable_ip]['roomid_list'].append(roomid)
 			self.client_task_dict[suitable_ip]['socket'].watch_room(roomid)
 
+	def push_info_to_current_event(self, information, ip):
+		if ip in self.current_event:
+			self.current_event[ip].append(information)
+		else:
+			self.current_event[ip] = [information]
+
 	def find_client_dict(self):
 		tempory_client_dict = {}
 		for ip in self.client_task_dict:
 			tempory_client_dict[ip] = len(self.client_task_dict[ip]['roomid_list'])
 		return tempory_client_dict
+
+	def find_room_id_name_dict(self):
+		room_id_dict = {}
+		for ip in self.client_task_dict:
+			res = []
+			for x in self.client_task_dict[ip]['roomid_list']:
+				if x not in self.room_info_dict:
+					self.room_info_dict[x] = show_me_your_room_id(room_id=x)
+				res.append(self.room_info_dict[x])
+			room_id_dict[ip] = res
+		return room_id_dict
 
 	def find_suitable_client_ip(self):
 		tempory_client_dict = {}

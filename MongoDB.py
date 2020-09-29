@@ -28,6 +28,12 @@ class MongoDB(object):
 		self.serverdb = self.mydb[SERVER_INFO_NAME]
 		self.sorted_list = [] # Initialize the ranked top list
 		self.total_message_obtain = {}
+
+		'Build room name dict'
+		self.room_info_dict = {}
+		for single in list(self.roomid_info.find({})):
+			self.room_info_dict[single['_id']] = single['room_nick_name']
+
 		if update_rank_list:
 			self.update_the_original_rank_list()
 			'Also, we build the message lists'
@@ -374,7 +380,7 @@ class MongoDB(object):
 		self.serverdb.drop()
 
 	def increment_danmaku_counter_of_server(self, server_id):
-		print(f"server_id: {server_id}")
+		# print(f"server_id: {server_id}")
 		self.serverdb.find_one_and_update({'_id': server_id}, {'$inc':
 			                                                     {'recent danmaku': 1}
 		                                                     }, new=True)
@@ -387,10 +393,15 @@ class MongoDB(object):
 			'cannot find this server, this should only happens at the beginning'
 			self.serverdb.insert_one({'_id': server_id,
 			                          'recent danmaku': 0,
-			                          'overhead': serverdict['overhead']
+									  'room_list': [],
+									  'current_event': [],
+									  'overhead': serverdict['overhead']
 			                          })
 		else:
-			self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead']}})
+			self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead'],
+															  'room_list': serverdict['room_list'],
+															  'current_event': serverdict['current_event']
+															  }})
 		# 	print(info)
 		# test = list(self.serverdb.find({'_id': server_id}))
 		# pprint.pprint(test)

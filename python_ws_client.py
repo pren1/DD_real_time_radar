@@ -17,8 +17,8 @@ class python_ws_client(object):
         self.global_lock=threading.Lock()
 
         self.open_room_list = []
-        # self.ip_list = ['localhost', '18.223.43.172', '13.59.178.54', '18.218.167.172']
-        self.ip_list = ['localhost']
+        self.ip_list = ['localhost', '18.222.55.98', '18.188.26.14', '18.219.63.159']
+        # self.ip_list = ['localhost']
         self.server_id_dict = {}
         for index, ip in enumerate(self.ip_list):
             self.server_id_dict[ip] = index + 1
@@ -26,7 +26,7 @@ class python_ws_client(object):
         'Test the running time of target func'
         start_time = time.time()
         self.open_room_list = self.obtain_open_room_list_periodically()
-        self.secheduler = Client_Secheduler(self.socket_list, self.open_room_list)
+        self.secheduler = Client_Secheduler(self.socket_list, self.open_room_list, self.mongo_db.room_info_dict)
         self.period_seconds = int(time.time() - start_time) * 5
         self.Schedual_roomid_to_clients()
         # print("--- %s seconds ---" % (self.period_seconds))
@@ -48,18 +48,22 @@ class python_ws_client(object):
         for single in contents:
             if single['liveStatus'] == 1:
                 result.append(single['roomid'])
-        pprint.pprint(f"overhead: {len(result)}")
+        # pprint.pprint(f"overhead: {len(result)}")
         return result
 
     def Schedual_roomid_to_clients(self):
         self.secheduler.renew_client_tasks_using_new_roomid_list(self.open_room_list)
         tempory_client_dict = self.secheduler.find_client_dict()
+        room_list_dict = self.secheduler.find_room_id_name_dict()
+        current_event_dict = self.secheduler.current_event
         # print(tempory_client_dict)
         'Then, we could write into the database, the information would be shown on the website..'
         for single_key in tempory_client_dict:
             Server_dict = {
                 'server id': self.server_id_dict[single_key],
-                'overhead': tempory_client_dict[single_key]
+                'overhead': tempory_client_dict[single_key],
+                'room_list': room_list_dict[single_key],
+                'current_event': current_event_dict[single_key]
             }
             self.global_lock.acquire()
             self.mongo_db.update_server_db_according_to_server_dict(Server_dict)

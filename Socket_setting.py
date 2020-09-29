@@ -22,10 +22,10 @@ class Socket_setting(object):
         is_interpretation, log_meg = self.NB_classifier.decide_class(message['message'])
         # print(f"{log_meg}")
         self.global_lock.acquire()
-        print(f"Lock aquired by {self.ip_address}")
+        # print(f"Lock aquired by {self.ip_address}")
         self.mongo_db.increment_danmaku_counter_of_server(self.server_id)
-        print(log_meg)
         if is_interpretation:
+            print(log_meg + f"from: {self.ip_address}")
             self.mongo_db.update_everything_according_to_a_new_message(message)
         self.global_lock.release()
 
