@@ -125,11 +125,12 @@ class MongoDB(object):
 		'get the list from dataset for one time. Later, we will update it when necessary...'
 		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_len_count", -1)
 		resulted_curosr_list = [x for x in rank_list_curosr]
+		# resulted_curosr_list = resulted_curosr_list[1100:]
 		for single_rank in tqdm(resulted_curosr_list):
 			nickname = get_nickname_of_mid(single_rank['_id'])
 			database_name = single_rank['man_nick_name']
 			if nickname != database_name:
-				print("changing previous name..")
+				print(f"changing previous name from {database_name} to {nickname}")
 				self.update_nickname_in_mid_info(mid=single_rank['_id'])
 				single_rank['man_nick_name'] = nickname
 			face, sign = get_sign_and_face_of_mid(single_rank['_id'])

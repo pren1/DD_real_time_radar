@@ -18,6 +18,12 @@ def get_nickname_of_mid(mid):
 	'Get nickname from mid'
 	url = 'https://api.bilibili.com/x/space/acc/info?mid='+str(mid)
 	res = requests.get(url)
+	if res.json()['code'] == -404:
+		'we can use...mine :P to make this more stable..'
+		url = 'https://api.bilibili.com/x/space/acc/info?mid=' + str(1395983)
+		res = requests.get(url)
+		assert res.json()['code'] == 0
+
 	name = res.json()['data']['name']
 	time.sleep(1)
 	while len(name) == 0:
