@@ -473,9 +473,10 @@ class MongoDB(object):
 
 			newvalues = {"$set": info}
 			self.ranking.update_one(myquery, newvalues)
-			print(f"Updated ranklist: from {myquery} to {info}")
+			# print(f"Updated ranklist: from {myquery} to {info}")
 		else:
-			print("Threshold not meet, keep doing your work!")
+			pass
+			# print("Threshold not meet, keep doing your work!")
 
 	def create_table_for_man(self, mid_val):
 		'Up to date!'

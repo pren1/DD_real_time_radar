@@ -52,13 +52,15 @@ class python_ws_client(object):
         return result
 
     def Schedual_roomid_to_clients(self):
+        # self.secheduler.renew_every_socket_connection()
         self.secheduler.renew_client_tasks_using_new_roomid_list(self.open_room_list)
         tempory_client_dict = self.secheduler.find_client_dict()
         room_list_dict = self.secheduler.find_room_id_name_dict()
         current_event_dict = self.secheduler.current_event
-        # print(tempory_client_dict)
+
         'Then, we could write into the database, the information would be shown on the website..'
         for single_key in tempory_client_dict:
+            # print(f"overhead: {tempory_client_dict[single_key]}")
             Server_dict = {
                 'server id': self.server_id_dict[single_key],
                 'overhead': tempory_client_dict[single_key],

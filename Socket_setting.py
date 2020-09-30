@@ -8,10 +8,19 @@ class Socket_setting(object):
         self.global_lock = global_lock
         self.ip_address = ip_address
         self.server_id = server_id
+        self.port = port
         self.sio = socketio.Client()
         self.sio.on('connect', self.socket_connected)
         self.sio.on('message', self.message_received)
-        self.sio.connect(f'http://{self.ip_address}:{port}')
+        self.sio.on('disconnect', self.handle_disconnection)
+        self.sio.connect(f'http://{self.ip_address}:{self.port}')
+
+    def handle_disconnection(self):
+        print("Disconnected, get connected again...")
+        # self.sio.connect(f'http://{self.ip_address}:{self.port}')
+
+    # def socket_reconnect(self):
+    #     self.sio.connect(f'http://{self.ip_address}:{self.port}')
 
     def socket_connected(self):
         print("Connected with js server")
@@ -25,7 +34,7 @@ class Socket_setting(object):
         # print(f"Lock aquired by {self.ip_address}")
         self.mongo_db.increment_danmaku_counter_of_server(self.server_id)
         if is_interpretation:
-            print(log_meg + f"from: {self.ip_address}")
+            # print(log_meg + f"from: {self.ip_address}")
             self.mongo_db.update_everything_according_to_a_new_message(message)
         self.global_lock.release()
 
