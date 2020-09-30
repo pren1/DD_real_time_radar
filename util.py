@@ -19,8 +19,9 @@ def get_nickname_of_mid(mid):
 	url = 'https://api.bilibili.com/x/space/acc/info?mid='+str(mid)
 	res = requests.get(url)
 	name = res.json()['data']['name']
+	time.sleep(1)
 	while len(name) == 0:
-		# time.sleep(1)
+		time.sleep(1)
 		res = requests.get(url)
 		name = res.json()['data']['name']
 	return name

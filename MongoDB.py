@@ -126,6 +126,11 @@ class MongoDB(object):
 		rank_list_curosr = self.mid_info.find({'$where':"this.danmaku_count >= this.danmaku_threshord"}).sort("danmaku_len_count", -1)
 		resulted_curosr_list = [x for x in rank_list_curosr]
 		for single_rank in tqdm(resulted_curosr_list):
+			nickname = get_nickname_of_mid(single_rank['_id'])
+			database_name = single_rank['man_nick_name']
+			if nickname != database_name:
+				self.update_nickname_in_mid_info(mid=single_rank['_id'])
+				single_rank['man_nick_name'] = nickname
 			face, sign = get_sign_and_face_of_mid(single_rank['_id'])
 			single_rank['face'] = face
 			single_rank['sign'] = sign
@@ -539,14 +544,14 @@ class MongoDB(object):
 			self.mid_info.update({'_id': mid},
 									{'$set':{'man_nick_name': get_nickname_of_mid(mid)}})
 			return
-		'if mid == 0, update nickname of every interpretation man'
-		info = list(self.mid_info.find())
-		for man in tqdm(info):
-			if man['danmaku_count'] >= man['danmaku_threshord']:
-				nick_name = get_nickname_of_mid(man['_id'])
-				self.mid_info.update({'_id':man['_id']},
-									{'$set':{'man_nick_name':nick_name}})
-				print(f"update the nickname of {man['_id']} to {nick_name}")
+		# 'if mid == 0, update nickname of every interpretation man'
+		# info = list(self.mid_info.find())
+		# for man in tqdm(info):
+		# 	if man['danmaku_count'] >= man['danmaku_threshord']:
+		# 		nick_name = get_nickname_of_mid(man['_id'])
+		# 		self.mid_info.update({'_id':man['_id']},
+		# 							{'$set':{'man_nick_name':nick_name}})
+		# 		print(f"update the nickname of {man['_id']} to {nick_name}")
 
 	def reset_threshord_of(self, midlist, new_threshold):
 		'Never used'
