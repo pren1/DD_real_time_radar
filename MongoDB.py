@@ -129,6 +129,7 @@ class MongoDB(object):
 			nickname = get_nickname_of_mid(single_rank['_id'])
 			database_name = single_rank['man_nick_name']
 			if nickname != database_name:
+				print("changing previous name..")
 				self.update_nickname_in_mid_info(mid=single_rank['_id'])
 				single_rank['man_nick_name'] = nickname
 			face, sign = get_sign_and_face_of_mid(single_rank['_id'])
