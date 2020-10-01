@@ -38,11 +38,14 @@ class Client_Secheduler(object):
 
 	def renew_client_tasks_using_new_roomid_list(self, new_list):
 		'Do not do anything when the list does not change'
-		if new_list == self.room_id_list:
-			return
+		# if new_list == self.room_id_list:
+		# 	return
+		'Always renew'
 		removed_list, added_list = self.get_difference_between_two_lists(old_list=self.room_id_list, new_list=new_list)
-		print(f"observe changes: Removed_list: {removed_list}")
-		print(f"observe changes, added_list: {added_list}")
+		if removed_list:
+			print(f"observe changes: Removed_list: {removed_list}")
+		if added_list:
+			print(f"observe changes, added_list: {added_list}")
 		'Remove roomid within removed_list'
 		for remove_room in removed_list:
 			self.Stop_monitoring_target_roomid(remove_room)
@@ -50,6 +53,20 @@ class Client_Secheduler(object):
 		for add_room in added_list:
 			self.Assign_task_to_one_client(add_room)
 		self.room_id_list = new_list
+		'At this point, the self.client_task_dict contains the assignment of each server'
+		for ip in self.client_task_dict:
+			target_room_id_list = self.client_task_dict[ip]['roomid_list']
+			client_room_id_list = self.client_task_dict[ip]['socket'].client_room_list
+			removed_list, added_list = self.get_difference_between_two_lists(old_list=client_room_id_list, new_list=target_room_id_list)
+			if removed_list or added_list:
+				print(f"For {ip}, remove: {removed_list}, add: {added_list}")
+			for remove_room in removed_list:
+				print(f"Removing roomid: {remove_room} from {ip}")
+				self.client_task_dict[ip]['socket'].close_room(remove_room)
+
+			for add_room in added_list:
+				print(f"Assigning roomid: {add_room} to {ip}")
+				self.client_task_dict[ip]['socket'].watch_room(add_room)
 
 	def get_difference_between_two_lists(self, old_list, new_list):
 		total_set = set(old_list + new_list)
@@ -71,10 +88,10 @@ class Client_Secheduler(object):
 			if roomid in self.client_task_dict[ip]['roomid_list']:
 				'Find it, direct the client to remove it'
 				self.push_info_to_current_event(f'{self.room_info_dict[roomid]} 已下播', ip)
-				print(f"Removing roomid: {roomid} from {ip}")
+				# print(f"Removing roomid: {roomid} from {ip}")
 				'Do not forget to remove the roomid from corresponding dict'
 				self.client_task_dict[ip]['roomid_list'].remove(roomid)
-				self.client_task_dict[ip]['socket'].close_room(roomid)
+				# self.client_task_dict[ip]['socket'].close_room(roomid)
 				return
 		print(f"No where is roomid {roomid}!!!")
 
@@ -83,9 +100,9 @@ class Client_Secheduler(object):
 		suitable_ip = self.find_suitable_client_ip()
 		if suitable_ip != 'overburden':
 			self.push_info_to_current_event(f'{self.room_info_dict[roomid]} 已上播', suitable_ip)
-			print(f"Assigning roomid: {roomid} to {suitable_ip}")
+			# print(f"Assigning roomid: {roomid} to {suitable_ip}")
 			self.client_task_dict[suitable_ip]['roomid_list'].append(roomid)
-			self.client_task_dict[suitable_ip]['socket'].watch_room(roomid)
+			# self.client_task_dict[suitable_ip]['socket'].watch_room(roomid)
 
 	def push_info_to_current_event(self, information, ip):
 		if ip in self.current_event:

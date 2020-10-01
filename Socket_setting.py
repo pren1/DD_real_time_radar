@@ -9,11 +9,17 @@ class Socket_setting(object):
         self.ip_address = ip_address
         self.server_id = server_id
         self.port = port
+        self.client_room_list = [] # The one that saved the rooms in target server
         self.sio = socketio.Client()
         self.sio.on('connect', self.socket_connected)
         self.sio.on('message', self.message_received)
+        self.sio.on('Client_room_list', self.fetch_client_rooms)
         self.sio.on('disconnect', self.handle_disconnection)
         self.sio.connect(f'http://{self.ip_address}:{self.port}')
+
+    def fetch_client_rooms(self, room_list):
+        print(f"Client room list: {room_list} from {self.ip_address}")
+        self.client_room_list = room_list
 
     def handle_disconnection(self):
         print("Disconnected, get connected again...")
