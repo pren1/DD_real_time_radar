@@ -63,13 +63,7 @@ class Socket_setting(object):
 
     def socket_reconnect(self):
         'litterally, reconnect the current socket'
-        self.sio.disconnect()
-        self.sio = socketio.Client()
-        self.sio.on('connect', self.socket_connected)
-        self.sio.on('message', self.message_received)
-        self.sio.on('Client_room_list', self.fetch_client_rooms)
-        self.sio.on('disconnect', self.handle_disconnection)
-        self.sio.on('Pong', self.pong_received)
+        self.sio.eio.disconnect()
         self.sio.connect(f'http://{self.ip_address}:{self.port}')
 
     def handle_disconnection(self):
@@ -81,16 +75,20 @@ class Socket_setting(object):
         print(self.sio.eio.sid)
 
     def message_received(self, message):
-        'on received danmakus'
-        is_interpretation, log_meg = self.NB_classifier.decide_class(message['message'])
-        # print(f"{log_meg}")
-        self.global_lock.acquire()
-        # print(f"Lock aquired by {self.ip_address}")
-        self.mongo_db.increment_danmaku_counter_of_server(self.server_id)
-        print(log_meg + f"from: {self.ip_address}")
-        if is_interpretation:
-            self.mongo_db.update_everything_according_to_a_new_message(message)
-        self.global_lock.release()
+        # print(f"server id: {self.sio.eio.sid}, message id: {message['global_sid']}")
+        if self.sio.eio.sid == message['global_sid']:
+            'on received danmakus'
+            is_interpretation, log_meg = self.NB_classifier.decide_class(message['message'])
+            # print(f"{log_meg}")
+            self.global_lock.acquire()
+            # print(f"Lock aquired by {self.ip_address}")
+            self.mongo_db.increment_danmaku_counter_of_server(self.server_id)
+            print(log_meg + f"from: {self.ip_address}")
+            if is_interpretation:
+                self.mongo_db.update_everything_according_to_a_new_message(message)
+            self.global_lock.release()
+        else:
+            print("Duplicate message, ignored :P")
 
     def watch_room(self, roomid):
         self.sio.emit("watch_room", roomid)
