@@ -19,10 +19,10 @@ class Client_Secheduler(object):
 		for single_ip in socket_dict_list:
 			self.current_event[single_ip['ip']] = []
 
-	# def renew_every_socket_connection(self):
-	# 	print('renew every socket connection, otherwise we get disconnected')
-	# 	for ip in self.client_task_dict:
-	# 		self.client_task_dict[ip]['socket'].socket_reconnect()
+	def renew_every_socket_connection(self):
+		print('renew every socket connection, otherwise we get disconnected')
+		for ip in self.client_task_dict:
+			self.client_task_dict[ip]['socket'].socket_reconnect()
 
 	def build_initial_client_tasks(self):
 		for index, single_room in enumerate(self.room_id_list):

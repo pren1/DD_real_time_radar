@@ -18,8 +18,17 @@ class Socket_setting(object):
         self.sio.connect(f'http://{self.ip_address}:{self.port}')
 
     def fetch_client_rooms(self, room_list):
-        print(f"Client room list: {room_list} from {self.ip_address}")
+        # print(f"Client room list: {room_list} from {self.ip_address}")
         self.client_room_list = room_list
+
+    def socket_reconnect(self):
+        'litterally, reconnect the current socket'
+        self.sio = socketio.Client()
+        self.sio.on('connect', self.socket_connected)
+        self.sio.on('message', self.message_received)
+        self.sio.on('Client_room_list', self.fetch_client_rooms)
+        self.sio.on('disconnect', self.handle_disconnection)
+        self.sio.connect(f'http://{self.ip_address}:{self.port}')
 
     def handle_disconnection(self):
         print("Disconnected, get connected again...")
@@ -39,8 +48,8 @@ class Socket_setting(object):
         self.global_lock.acquire()
         # print(f"Lock aquired by {self.ip_address}")
         self.mongo_db.increment_danmaku_counter_of_server(self.server_id)
+        print(log_meg + f"from: {self.ip_address}")
         if is_interpretation:
-            # print(log_meg + f"from: {self.ip_address}")
             self.mongo_db.update_everything_according_to_a_new_message(message)
         self.global_lock.release()
 

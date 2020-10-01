@@ -76,6 +76,16 @@ class python_ws_client(object):
         timerThread = threading.Thread(target=self.timer_func)
         timerThread.start()
 
+        reconnectionThread = threading.Thread(target=self.periodically_reconnecton())
+        reconnectionThread.start()
+
+    def periodically_reconnecton(self):
+        'say, every single minute'
+        while True:
+            time.sleep(60)
+            print(f"test at: {datetime.datetime.now()}")
+            self.secheduler.renew_every_socket_connection()
+
     def timer_func(self):
         next_call = time.time()
         while True:
