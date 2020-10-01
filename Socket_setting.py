@@ -23,6 +23,7 @@ class Socket_setting(object):
 
     def socket_reconnect(self):
         'litterally, reconnect the current socket'
+        self.sio.disconnect()
         self.sio = socketio.Client()
         self.sio.on('connect', self.socket_connected)
         self.sio.on('message', self.message_received)
