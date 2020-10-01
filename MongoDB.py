@@ -402,12 +402,14 @@ class MongoDB(object):
 			                          'recent danmaku': 0,
 									  'room_list': [],
 									  'current_event': [],
-									  'overhead': serverdict['overhead']
+									  'overhead': serverdict['overhead'],
+									  'server_status': False
 			                          })
 		else:
 			self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead'],
 															  'room_list': serverdict['room_list'],
-															  'current_event': serverdict['current_event']
+															  'current_event': serverdict['current_event'],
+															  'server_status': serverdict['server_status']
 															  }})
 		# 	print(info)
 		# test = list(self.serverdb.find({'_id': server_id}))

@@ -29,10 +29,12 @@ class Socket_setting(object):
         '3. check results'
         result = self.check_connection()
         if not result:
-            print(f"restarting: {self.ip_address}")
+            # print(f"restarting: {self.ip_address}")
             self.socket_reconnect()
         else:
-            print(f"{self.ip_address} is connected")
+            pass
+            # print(f"{self.ip_address} is connected")
+        return result
 
     def check_connection(self):
         print(f"time distance: {self.pong_time - self.ping_time}")

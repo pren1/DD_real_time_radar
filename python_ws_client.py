@@ -57,6 +57,7 @@ class python_ws_client(object):
         tempory_client_dict = self.secheduler.find_client_dict()
         room_list_dict = self.secheduler.find_room_id_name_dict()
         current_event_dict = self.secheduler.current_event
+        server_status = self.secheduler.server_status
 
         'Then, we could write into the database, the information would be shown on the website..'
         for single_key in tempory_client_dict:
@@ -65,7 +66,8 @@ class python_ws_client(object):
                 'server id': self.server_id_dict[single_key],
                 'overhead': tempory_client_dict[single_key],
                 'room_list': room_list_dict[single_key],
-                'current_event': current_event_dict[single_key]
+                'current_event': current_event_dict[single_key],
+                'server_status': server_status[single_key]
             }
             self.global_lock.acquire()
             self.mongo_db.update_server_db_according_to_server_dict(Server_dict)

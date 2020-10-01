@@ -16,13 +16,16 @@ class Client_Secheduler(object):
 		self.client_task_dict = {}
 		self.build_initial_client_tasks()
 		self.current_event = {}
+		self.server_status = {}
 		for single_ip in socket_dict_list:
 			self.current_event[single_ip['ip']] = []
+			self.server_status[single_ip['ip']] = False
 
 	def renew_every_socket_connection(self):
 		print('Check every socket connection, otherwise we get disconnected')
 		for ip in self.client_task_dict:
-			self.client_task_dict[ip]['socket'].connection_detect_suit()
+			self.server_status[ip] = self.client_task_dict[ip]['socket'].connection_detect_suit()
+		pprint.pprint(self.server_status)
 
 	def build_initial_client_tasks(self):
 		for index, single_room in enumerate(self.room_id_list):
