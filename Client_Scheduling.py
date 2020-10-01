@@ -20,9 +20,9 @@ class Client_Secheduler(object):
 			self.current_event[single_ip['ip']] = []
 
 	def renew_every_socket_connection(self):
-		print('renew every socket connection, otherwise we get disconnected')
+		print('Check every socket connection, otherwise we get disconnected')
 		for ip in self.client_task_dict:
-			self.client_task_dict[ip]['socket'].socket_reconnect()
+			self.client_task_dict[ip]['socket'].connection_detect_suit()
 
 	def build_initial_client_tasks(self):
 		for index, single_room in enumerate(self.room_id_list):
@@ -84,6 +84,8 @@ class Client_Secheduler(object):
 		return removed_list, added_list
 
 	def Stop_monitoring_target_roomid(self, roomid):
+		if roomid not in self.room_info_dict:
+			self.room_info_dict[roomid] = show_me_your_room_id(room_id=roomid)
 		for ip in self.client_task_dict:
 			if roomid in self.client_task_dict[ip]['roomid_list']:
 				'Find it, direct the client to remove it'
@@ -96,6 +98,8 @@ class Client_Secheduler(object):
 		print(f"No where is roomid {roomid}!!!")
 
 	def Assign_task_to_one_client(self, roomid):
+		if roomid not in self.room_info_dict:
+			self.room_info_dict[roomid] = show_me_your_room_id(room_id=roomid)
 		'Before everything, let us find the most suitable client'
 		suitable_ip = self.find_suitable_client_ip()
 		if suitable_ip != 'overburden':

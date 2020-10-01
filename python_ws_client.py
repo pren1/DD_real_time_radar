@@ -82,7 +82,7 @@ class python_ws_client(object):
     def periodically_reconnecton(self):
         'say, every single minute'
         while True:
-            time.sleep(60)
+            time.sleep(40)
             print(f"test at: {datetime.datetime.now()}")
             self.secheduler.renew_every_socket_connection()
 

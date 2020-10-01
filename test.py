@@ -5,9 +5,7 @@ import pdb
 contents = requests.get('https://api.vtbs.moe/v1/info').json()
 result = []
 for single in contents:
-    if single['roomid'] == 9286381:
-        pdb.set_trace()
     if single['liveStatus'] == 1:
         result.append(single['roomid'])
-pdb.set_trace()
-pprint.pprint(result)
+print(len(result))
+# pprint.pprint(result)
