@@ -48,7 +48,8 @@ class python_ws_client(object):
         for single in contents:
             if single['liveStatus'] == 1:
                 result.append(single['roomid'])
-        # pprint.pprint(f"overhead: {len(result)}")
+        pprint.pprint(f"overhead: {len(result)}")
+        print(f"overhead: {len(result)}", file=open("log.txt", "a"))
         return result
 
     def Schedual_roomid_to_clients(self):
@@ -86,19 +87,20 @@ class python_ws_client(object):
         while True:
             time.sleep(40)
             print(f"test at: {datetime.datetime.now()}")
+            print(f"test at: {datetime.datetime.now()}", file=open("log.txt", "a"))
             self.secheduler.renew_every_socket_connection()
 
     def timer_func(self):
-        next_call = time.time()
         while True:
-            # print(f"update room list at: {datetime.datetime.now()}")
-            start_time = time.time()
-            self.open_room_list = self.obtain_open_room_list_periodically()
-            self.Schedual_roomid_to_clients()
-            self.period_seconds = int(time.time() - start_time) * 5
-            # print("--- %s seconds ---" % (self.period_seconds))
-            next_call = next_call + self.period_seconds
-            time.sleep(max(next_call - time.time(), 2))
+            try:
+                self.open_room_list = self.obtain_open_room_list_periodically()
+                self.Schedual_roomid_to_clients()
+            except BaseException as error:
+                time.sleep(20)
+                print('An exception occurred: {}, will try again later...'.format(error))
+                print('An exception occurred: {}, will try again later...'.format(error), file=open("log.txt", "a"))
+            else:
+                time.sleep(20)
 
 if __name__ == '__main__':
     ws_listenser = python_ws_client()

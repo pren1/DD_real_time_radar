@@ -38,8 +38,10 @@ class Socket_setting(object):
 
     def check_connection(self):
         print(f"time distance: {self.pong_time - self.ping_time}")
+        print(f"time distance: {self.pong_time - self.ping_time}", file=open("log.txt", "a"))
         if self.pong_time == -1 or self.ping_time == -1:
             print("Something wrong here")
+            print("Something wrong here", file=open("log.txt", "a"))
             return False
 
         if self.pong_time < self.ping_time:
@@ -63,16 +65,38 @@ class Socket_setting(object):
 
     def socket_reconnect(self):
         'litterally, reconnect the current socket'
-        self.sio.eio.disconnect()
-        self.sio.connect(f'http://{self.ip_address}:{self.port}')
+        self.sio.eio.disconnect(abort=True)
+        time.sleep(5)
+
+        connected = False
+        while not connected:
+            try:
+                print(f"Try connecting to the server: {self.ip_address}!")
+                print(f"Try connecting to the server: {self.ip_address}!", file=open("log.txt", "a"))
+                self.sio.connect(f'http://{self.ip_address}:{self.port}')
+            except BaseException as error:
+                print('An exception occurred: {}'.format(error))
+                print('An exception occurred: {}'.format(error), file=open("log.txt", "a"))
+                time.sleep(1)
+                print("try to disconnect first...")
+                print("try to disconnect first...", file=open("log.txt", "a"))
+                self.sio.eio.disconnect(abort=True)
+                time.sleep(5)
+            else:
+                print(f"Connected to {self.ip_address}")
+                print(f"Connected to {self.ip_address}", file=open("log.txt", "a"))
+                connected = True
 
     def handle_disconnection(self):
         print("Disconnected, get connected again...")
+        print("Disconnected, get connected again...", file=open("log.txt", "a"))
         # self.sio.connect(f'http://{self.ip_address}:{self.port}')
 
     def socket_connected(self):
         print("Connected with js server")
+        print("Connected with js server", file=open("log.txt", "a"))
         print(self.sio.eio.sid)
+        print(self.sio.eio.sid, file=open("log.txt", "a"))
 
     def message_received(self, message):
         # print(f"server id: {self.sio.eio.sid}, message id: {message['global_sid']}")
@@ -84,11 +108,13 @@ class Socket_setting(object):
             # print(f"Lock aquired by {self.ip_address}")
             self.mongo_db.increment_danmaku_counter_of_server(self.server_id)
             print(log_meg + f"from: {self.ip_address}")
+            print(log_meg + f"from: {self.ip_address}", file=open("log.txt", "a"))
             if is_interpretation:
                 self.mongo_db.update_everything_according_to_a_new_message(message)
             self.global_lock.release()
         else:
             print("Duplicate message, ignored :P")
+            print("Duplicate message, ignored :P", file=open("log.txt", "a"))
 
     def watch_room(self, roomid):
         self.sio.emit("watch_room", roomid)

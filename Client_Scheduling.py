@@ -26,6 +26,7 @@ class Client_Secheduler(object):
 		for ip in self.client_task_dict:
 			self.server_status[ip] = self.client_task_dict[ip]['socket'].connection_detect_suit()
 		pprint.pprint(self.server_status)
+		print(self.server_status, file=open("log.txt", "a"))
 
 	def build_initial_client_tasks(self):
 		for index, single_room in enumerate(self.room_id_list):
@@ -47,8 +48,10 @@ class Client_Secheduler(object):
 		removed_list, added_list = self.get_difference_between_two_lists(old_list=self.room_id_list, new_list=new_list)
 		if removed_list:
 			print(f"observe changes: Removed_list: {removed_list}")
+			print(f"observe changes: Removed_list: {removed_list}", file=open("log.txt", "a"))
 		if added_list:
 			print(f"observe changes, added_list: {added_list}")
+			print(f"observe changes, added_list: {added_list}", file=open("log.txt", "a"))
 		'Remove roomid within removed_list'
 		for remove_room in removed_list:
 			self.Stop_monitoring_target_roomid(remove_room)
@@ -63,12 +66,15 @@ class Client_Secheduler(object):
 			removed_list, added_list = self.get_difference_between_two_lists(old_list=client_room_id_list, new_list=target_room_id_list)
 			if removed_list or added_list:
 				print(f"For {ip}, remove: {removed_list}, add: {added_list}")
+				print(f"For {ip}, remove: {removed_list}, add: {added_list}", file=open("log.txt", "a"))
 			for remove_room in removed_list:
 				print(f"Removing roomid: {remove_room} from {ip}")
+				print(f"Removing roomid: {remove_room} from {ip}", file=open("log.txt", "a"))
 				self.client_task_dict[ip]['socket'].close_room(remove_room)
 
 			for add_room in added_list:
 				print(f"Assigning roomid: {add_room} to {ip}")
+				print(f"Assigning roomid: {add_room} to {ip}", file=open("log.txt", "a"))
 				self.client_task_dict[ip]['socket'].watch_room(add_room)
 
 	def get_difference_between_two_lists(self, old_list, new_list):
@@ -99,6 +105,7 @@ class Client_Secheduler(object):
 				# self.client_task_dict[ip]['socket'].close_room(roomid)
 				return
 		print(f"No where is roomid {roomid}!!!")
+		print(f"No where is roomid {roomid}!!!", file=open("log.txt", "a"))
 
 	def Assign_task_to_one_client(self, roomid):
 		if roomid not in self.room_info_dict:
@@ -142,5 +149,6 @@ class Client_Secheduler(object):
 		target_ip = min(tempory_client_dict, key = tempory_client_dict.get)
 		if tempory_client_dict[target_ip] >= self.each_client_capacity:
 			print("Too many live rooms, we are overburden. Wont keep monitoring new room until things become better")
+			print("Too many live rooms, we are overburden. Wont keep monitoring new room until things become better", file=open("log.txt", "a"))
 			return 'overburden'
 		return target_ip
