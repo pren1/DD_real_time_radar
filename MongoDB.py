@@ -25,7 +25,7 @@ class MongoDB(object):
 		self.roomid_info = self.mydb[ROOMID_INFO]
 		self.ranking = self.mydb[RANKING]
 		self.maindb = self.mydb[MAINDB]
-		self.serverdb = self.mydb[SERVER_INFO_NAME]
+		# self.serverdb = self.mydb[SERVER_INFO_NAME]
 		self.sorted_list = [] # Initialize the ranked top list
 		self.total_message_obtain = {}
 
@@ -380,41 +380,41 @@ class MongoDB(object):
 		process_rate = intp_process_cnt / danmaku_count
 		return process_rate > 0.1
 
-	def get_updated_server_info(self):
-		return list(self.serverdb.find({}))
+	# def get_updated_server_info(self):
+	# 	return list(self.serverdb.find({}))
 
-	def clean_up_serverdb(self):
-		self.serverdb.drop()
+	# def clean_up_serverdb(self):
+	# 	self.serverdb.drop()
 
-	def increment_danmaku_counter_of_server(self, server_id):
-		# print(f"server_id: {server_id}")
-		self.serverdb.find_one_and_update({'_id': server_id}, {'$inc':
-			                                                     {'recent danmaku': 1}
-		                                                     }, new=True)
+	# def increment_danmaku_counter_of_server(self, server_id):
+	# 	# print(f"server_id: {server_id}")
+	# 	self.serverdb.find_one_and_update({'_id': server_id}, {'$inc':
+	# 		                                                     {'recent danmaku': 1}
+	# 	                                                     }, new=True)
 
-	def update_server_db_according_to_server_dict(self, serverdict):
-		# self.serverdb.drop()
-		server_id = serverdict['server id']
-		row = self.serverdb.find_one({'_id': server_id})
-		if row is None:
-			'cannot find this server, this should only happens at the beginning'
-			self.serverdb.insert_one({'_id': server_id,
-			                          'recent danmaku': 0,
-									  'room_list': [],
-									  'current_event': [],
-									  'overhead': serverdict['overhead'],
-									  'server_status': False
-			                          })
-		else:
-			self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead'],
-															  'room_list': serverdict['room_list'],
-															  'current_event': serverdict['current_event'],
-															  'server_status': serverdict['server_status']
-															  }})
-		# 	print(info)
-		# test = list(self.serverdb.find({'_id': server_id}))
-		# pprint.pprint(test)
-		# pdb.set_trace()
+	# def update_server_db_according_to_server_dict(self, serverdict):
+	# 	# self.serverdb.drop()
+	# 	server_id = serverdict['server id']
+	# 	row = self.serverdb.find_one({'_id': server_id})
+	# 	if row is None:
+	# 		'cannot find this server, this should only happens at the beginning'
+	# 		self.serverdb.insert_one({'_id': server_id,
+	# 		                          'recent danmaku': 0,
+	# 								  'room_list': [],
+	# 								  'current_event': [],
+	# 								  'overhead': serverdict['overhead'],
+	# 								  'server_status': False
+	# 		                          })
+	# 	else:
+	# 		self.serverdb.update({'_id': server_id}, {'$set':{'overhead': serverdict['overhead'],
+	# 														  'room_list': serverdict['room_list'],
+	# 														  'current_event': serverdict['current_event'],
+	# 														  'server_status': serverdict['server_status']
+	# 														  }})
+	# 	# 	print(info)
+	# 	# test = list(self.serverdb.find({'_id': server_id}))
+	# 	# pprint.pprint(test)
+	# 	# pdb.set_trace()
 
 	def update_mid_info_and_table_and_ranking(self, mydict):
 		'Up to date!'
@@ -475,10 +475,10 @@ class MongoDB(object):
 
 			newvalues = {"$set": info}
 			self.ranking.update_one(myquery, newvalues)
-			# print(f"Updated ranklist: from {myquery} to {info}")
+			print(f"Updated ranklist: from {myquery} to {info}")
 		else:
-			pass
-			# print("Threshold not meet, keep doing your work!")
+			# pass
+			print(f"Threshold not meet, [{count}/{threshold}]")
 
 	def create_table_for_man(self, mid_val):
 		'Up to date!'

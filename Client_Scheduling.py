@@ -3,6 +3,7 @@ import pdb
 import pprint
 from util import show_me_your_room_id
 
+'Not utilized anymore'
 class Client_Secheduler(object):
 	def __init__(self, socket_dict_list, initial_room_id_list, room_info_dict):
 		self.socket_dict_list = socket_dict_list

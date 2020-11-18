@@ -7,9 +7,9 @@ from update_data import update_data
 data_updater = update_data(update_rank_list=False)
 data_updater.begin_update_data_periodically()
 
-from Quick_update import Quick_update
-quick_updater = Quick_update(update_rank_list=False)
-quick_updater.begin_update_data_periodically()
+# from Quick_update import Quick_update
+# quick_updater = Quick_update(update_rank_list=False)
+# quick_updater.begin_update_data_periodically()
 'interface to front end'
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -63,10 +63,10 @@ def processjson():
 		                'data': data_updater.get_total_message(uid)
 		                })
 
-	if chart_type == 'server':
-		# print("Received something here")
-		return jsonify({'code': 9, 'message': 'server_info',
-		                'data': quick_updater.target_dict})
+	# if chart_type == 'server':
+	# 	# print("Received something here")
+	# 	return jsonify({'code': 9, 'message': 'server_info',
+	# 	                'data': quick_updater.target_dict})
 
 	'For the room related part, I do not save those things yet'
 	if request.args.get('roomid') != None and request.args.get('roomid') != 'undefined':

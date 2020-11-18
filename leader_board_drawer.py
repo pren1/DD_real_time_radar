@@ -2,6 +2,7 @@
 from util import *
 import pdb
 
+'deprecated'
 class leader_board_drawer(object):
 	def __init__(self, data_base):
 		self.database = data_base
