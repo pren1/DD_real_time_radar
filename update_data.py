@@ -3,7 +3,6 @@ from MongoDB import MongoDB
 import pdb
 from tqdm import tqdm
 import pprint
-import copy
 
 class update_data(object):
     def __init__(self, update_rank_list):
@@ -14,14 +13,12 @@ class update_data(object):
         self.man_status_dict = {}
         self.radar_dict = {}
         self.huolonglive_tracker = {}
-        self.cache_message = {}
 
         print('Update once when initialized & take a look at time')
         start_time = time.time()
         self.whole_data_bundle()
         self.period_seconds = int(time.time() - start_time) * 2
         print("--- %s seconds ---" % (self.period_seconds))
-        self.on_hold = False
 
     def begin_update_data_periodically(self):
         timerThread = threading.Thread(target=self.timer_func)
@@ -32,10 +29,7 @@ class update_data(object):
         while True:
             print(f"update data at: {datetime.datetime.now()}")
             start_time = time.time()
-            self.cache_message = copy.deepcopy(self.db.total_message_obtain)
-            self.on_hold = True
             self.whole_data_bundle()
-            self.on_hold = False
             self.period_seconds = int(time.time() - start_time) * 2
             print("--- %s seconds ---" % (self.period_seconds))
             next_call = next_call + self.period_seconds
@@ -57,13 +51,7 @@ class update_data(object):
 
     def get_total_message(self, uid):
         # pprint.pprint(self.db.total_message_obtain[uid])
-        if self.on_hold:
-            print("accessed caching data")
-            return {'data': self.cache_message[uid],
-                    'roomid_list': list(self.cache_message[uid].keys())}
-        else:
-            return {'data': self.db.total_message_obtain[uid],
-                    'roomid_list': list(self.db.total_message_obtain[uid].keys())}
+        return {'data': self.db.total_message_obtain[uid], 'roomid_list': list(self.db.total_message_obtain[uid].keys())}
 
 if __name__ == '__main__':
     data_updater = update_data(update_rank_list=False)
