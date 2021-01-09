@@ -61,7 +61,8 @@ python3 python_ws_client.py
 
 8. 运行后端数据库接口
 ```
-python3 Interface.py
+uwsgi --http :5000 --enable-threads --wsgi-file ./Interface.py --callable ap
+p 
 ```
 
 💼 Interface

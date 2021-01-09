@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-#scp MongoDB.py root@8.210.51.250:/root/DD_real_time_radar
+scp MongoDB.py root@8.210.51.250:/root/DD_real_time_radar
 scp Socket_setting.py root@8.210.51.250:/root/DD_real_time_radar
 scp Client_Scheduling.py root@8.210.51.250:/root/DD_real_time_radar
 scp python_ws_client.py root@8.210.51.250:/root/DD_real_time_radar
-
+#scp change_uid.py root@8.210.51.250:/root/DD_real_time_radar
 
 scp update_data.py root@8.210.51.250:/root/DD_real_time_radar
 #scp util.py root@8.210.51.250:/root/DD_real_time_radar
